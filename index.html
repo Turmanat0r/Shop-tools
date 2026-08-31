@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1c1f22">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shop Tools">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Turmanator Shop Tools</title>
+<style>
+  :root {
+    --bg: #1c1f22;
+    --panel: #24282b;
+    --border: #34383c;
+    --border-light: #3d4145;
+    --text: #e7e4dd;
+    --muted: #9a978f;
+    --dim: #6b6864;
+    --accent: #F2B705;
+    --warn: #E8833A;
+    --mono: 'SFMono-Regular', ui-monospace, 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .stripe {
+    height: 8px; width: 100%;
+    background: repeating-linear-gradient(135deg, var(--accent), var(--accent) 12px, var(--bg) 12px, var(--bg) 24px);
+  }
+  .wrap {
+    max-width: 720px; margin: 0 auto;
+    padding: 24px calc(16px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px; letter-spacing: 0.12em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 4px;
+  }
+  h1 { font-size: 24px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .subtitle { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0 0 20px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; overflow-x: auto; }
+  .tab {
+    flex: 1; min-width: 92px; padding: 11px 8px;
+    border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--muted);
+    font-size: 12.5px; font-weight: 600; text-align: center;
+    cursor: pointer; user-select: none;
+  }
+  .tab.active { border-color: var(--accent); background: rgba(242,183,5,0.13); color: var(--accent); }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px; margin-bottom: 16px; display: none;
+  }
+  .panel.active { display: block; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  input[type=number], select {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border-light); border-radius: 6px;
+    color: var(--text); padding: 11px 10px; font-size: 16px;
+    font-family: var(--mono); outline: none;
+  }
+  input[type=number]:focus, select:focus { border-color: var(--accent); }
+  input[type=number].invalid { border-color: var(--warn); }
+  select {
+    -webkit-appearance: none; appearance: none;
+    padding-right: 30px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+                      linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+  .toggle-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .toggle-btn {
+    flex: 1; min-width: 120px; padding: 9px 8px;
+    border-radius: 6px; border: 1px solid var(--border-light);
+    background: var(--bg); color: var(--muted);
+    font-size: 12.5px; cursor: pointer; text-align: center; user-select: none;
+  }
+  .toggle-btn.active { border-color: var(--accent); background: rgba(242,183,5,0.13); color: var(--accent); }
+  .results { margin-top: 16px; }
+  .result-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; border-bottom: 1px solid #2c3033; gap: 12px;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { font-size: 13.5px; }
+  .result-note { font-size: 11.5px; color: var(--dim); margin-top: 2px; }
+  .result-value { font-family: var(--mono); font-size: 15px; color: var(--text); white-space: nowrap; }
+  .emph .result-label { font-weight: 700; font-size: 14.5px; }
+  .emph .result-value { font-size: 19px; font-weight: 700; color: var(--accent); }
+  .hero {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px; margin-bottom: 14px;
+  }
+  .hero-label { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .hero-num { font-family: var(--mono); font-size: 34px; font-weight: 700; color: var(--accent); line-height: 1.15; margin-top: 2px; }
+  .hero-sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
+  .note { color: var(--dim); font-size: 11.5px; line-height: 1.6; margin-top: 14px; }
+  .warn {
+    color: var(--warn); font-size: 12px; line-height: 1.5;
+    border: 1px solid rgba(232,131,58,0.35); background: rgba(232,131,58,0.08);
+    border-radius: 6px; padding: 9px 11px; margin-top: 12px;
+  }
+  .warn[hidden] { display: none; }
+  .section-label {
+    font-size: 12px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<div class="wrap">
+  <div class="eyebrow">Turmanator Shop Tools</div>
+  <h1>Fab Calculators</h1>
+  <p class="subtitle">Beam capacity, angle relationships, and right-triangle solving. Add it to your home screen and it keeps working with no signal.</p>
+
+  <p style="margin:-8px 0 18px"><a href="axle/" style="color:var(--accent);font-size:12.5px;text-decoration:none;border:1px solid var(--accent);border-radius:6px;padding:8px 12px;display:inline-block">Axle Targeting &rarr;</a></p>
+
+  <div class="tabs" id="main-tabs">
+    <div class="tab active" data-tab="beam">Beam</div>
+    <div class="tab" data-tab="angle">Angle</div>
+    <div class="tab" data-tab="hyp">Hypotenuse</div>
+  </div>
+
+  <!-- BEAM PANEL -->
+  <div class="panel active" id="panel-beam">
+    <div class="field">
+      <label for="b-size">Tube size</label>
+      <select id="b-size"></select>
+    </div>
+    <div class="field">
+      <label for="b-wall">Wall thickness</label>
+      <select id="b-wall"></select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="b-span">Span (in)</label>
+        <input type="number" step="1" min="1" id="b-span" value="48">
+      </div>
+      <div class="field">
+        <label for="b-defl">Deflection limit</label>
+        <select id="b-defl">
+          <option value="120">L/120 (loose)</option>
+          <option value="180" selected>L/180 (typical)</option>
+          <option value="240">L/240 (tight)</option>
+          <option value="360">L/360 (very tight)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Support &amp; load type</label>
+      <div class="toggle-group" id="b-case">
+        <div class="toggle-btn active" data-case="sp">Simple span · point load</div>
+        <div class="toggle-btn" data-case="su">Simple span · uniform</div>
+        <div class="toggle-btn" data-case="cp">Cantilever · point at end</div>
+        <div class="toggle-btn" data-case="cu">Cantilever · uniform</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="b-dyn">Service condition (dynamic factor)</label>
+      <select id="b-dyn">
+        <option value="1.0">Static / shop stand &mdash; 1.0&times;</option>
+        <option value="1.5">Gentle handling, no road &mdash; 1.5&times;</option>
+        <option value="2.0">Paved road towing &mdash; 2.0&times;</option>
+        <option value="2.5" selected>Mixed paved / gravel &mdash; 2.5&times;</option>
+        <option value="3.0">Rough gravel, washboard &mdash; 3.0&times;</option>
+        <option value="4.0">Off-road / severe service &mdash; 4.0&times;</option>
+      </select>
+    </div>
+
+    <div class="hero">
+      <div class="hero-label">Rated load in service</div>
+      <div class="hero-num" id="b-rated">&mdash;</div>
+      <div class="hero-sub" id="b-ratednote"></div>
+    </div>
+
+    <div class="warn" id="b-warn" hidden></div>
+
+    <div class="results">
+      <div class="result-row emph"><div><span class="result-label">Static capacity</span><div class="result-note" id="b-gov"></div></div><span class="result-value" id="b-cap">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Bending-limited load</span><div class="result-note">at 21.6 ksi allowable (A36, ASD)</div></div><span class="result-value" id="b-bend">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Shear-limited load</span><div class="result-note">at 14.4 ksi allowable on the webs</div></div><span class="result-value" id="b-shear">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Deflection-limited load</span><div class="result-note" id="b-deflnote"></div></div><span class="result-value" id="b-defload">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Deflection at static capacity</span><span class="result-value" id="b-deflat">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Moment of inertia (I)</span><span class="result-value" id="b-I">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Section modulus (S)</span><span class="result-value" id="b-S">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Tube weight</span><span class="result-value" id="b-wt">&mdash;</span></div>
+    </div>
+    <p class="note">A36 steel, allowable bending stress 0.6&times;F<sub>y</sub> = 21.6 ksi, allowable shear 0.4&times;F<sub>y</sub> = 14.4 ksi, E = 29,000 ksi. Section properties model radiused corners at an outside radius of 2&times;wall, which reproduces the published AISC HSS values for I, S and weight. Single member only, laterally braced, load applied about the axis shown. Uniform loads are the <em>total</em> load spread over the span, not per-foot. Capacity is the load you add &mdash; the tube's own weight is not subtracted, so on long spans of heavy wall, deduct it yourself.</p>
+    <p class="note">Cantilever deflection is checked against the limit over the projection itself (L/limit), which is stricter than the common practice of allowing twice that on a cantilever &mdash; conservative on purpose.</p>
+    <p class="note">The dynamic factor divides static capacity to account for impact and road shock &mdash; a 500 lb load hitting a pothole can momentarily push two or three times that through the frame. Rated load is what you can actually put on the member in that service condition. These multipliers are common shop practice, not code values; for a member carrying axle or hitch loads on a road-going trailer, size to the rated number and treat anything close to the line as a call for the next wall thickness up.</p>
+  </div>
+
+  <!-- ANGLE PANEL -->
+  <div class="panel" id="panel-angle">
+    <div class="field">
+      <label for="a-angle">Known angle (degrees)</label>
+      <input type="number" step="0.5" id="a-angle" value="67.5">
+    </div>
+    <div class="results">
+      <div class="result-row emph"><div><span class="result-label">Complement (90&deg; &minus; a)</span><div class="result-note">what's left to square it up</div></div><span class="result-value" id="a-comp">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Supplement (180&deg; &minus; a)</span><div class="result-note">the other side of a straight line</div></div><span class="result-value" id="a-supp">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Half angle (a &divide; 2)</span><div class="result-note">bevel per side on a symmetric joint</div></div><span class="result-value" id="a-half">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Double angle (a &times; 2)</span><span class="result-value" id="a-double">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Reflex (360&deg; &minus; a)</span><span class="result-value" id="a-reflex">&mdash;</span></div>
+    </div>
+
+    <div style="margin-top:22px; padding-top:18px; border-top:1px solid var(--border);">
+      <div class="section-label">Frame Corner &rarr; Miter Cut</div>
+      <div class="field">
+        <label for="a-corner">Total corner angle you want (degrees)</label>
+        <input type="number" step="0.5" min="1" max="179" id="a-corner" value="90">
+      </div>
+      <div class="result-row emph"><div><span class="result-label">Cut angle, each piece</span><div class="result-note">measured from the length of the stock</div></div><span class="result-value" id="a-mitercut">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Miter gauge setting</span><div class="result-note">degrees off square, for a saw that reads 0&deg; at a square cut</div></div><span class="result-value" id="a-miterset">&mdash;</span></div>
+      <p class="note">Two pieces cut at the same angle and joined form the total corner angle above &mdash; a 90&deg; corner needs a 45&deg; cut on each piece, which is also 45&deg; off square. Check which way your saw reads before you cut: on a 120&deg; corner the cut is 60&deg; from the stock but only 30&deg; off square.</p>
+    </div>
+  </div>
+
+  <!-- HYPOTENUSE PANEL -->
+  <div class="panel" id="panel-hyp">
+    <div class="tabs" id="hyp-tabs" style="margin-bottom:16px;">
+      <div class="tab active" data-htab="legs">Two legs known</div>
+      <div class="tab" data-htab="legangle">Leg + angle known</div>
+    </div>
+
+    <div id="hyp-legs">
+      <div class="row2">
+        <div class="field"><label for="h-lega">Leg A (rise)</label><input type="number" step="0.125" min="0" id="h-lega" value="36"></div>
+        <div class="field"><label for="h-legb">Leg B (run)</label><input type="number" step="0.125" min="0" id="h-legb" value="48"></div>
+      </div>
+      <div class="results">
+        <div class="result-row emph"><span class="result-label">Hypotenuse</span><span class="result-value" id="h-hyp1">&mdash;</span></div>
+        <div class="result-row"><span class="result-label">Angle at leg B (opposite A)</span><span class="result-value" id="h-anga">&mdash;</span></div>
+        <div class="result-row"><span class="result-label">Angle at leg A (opposite B)</span><span class="result-value" id="h-angb">&mdash;</span></div>
+      </div>
+    </div>
+
+    <div id="hyp-legangle" hidden>
+      <div class="row2">
+        <div class="field"><label for="h-known">Known leg length</label><input type="number" step="0.125" min="0" id="h-known" value="36"></div>
+        <div class="field"><label for="h-angle">Angle (degrees)</label><input type="number" step="0.5" min="0" max="90" id="h-angle" value="30"></div>
+      </div>
+      <div class="field">
+        <label>That leg is...</label>
+        <div class="toggle-group" id="h-oppgroup">
+          <div class="toggle-btn active" data-opp="true">Opposite the angle</div>
+          <div class="toggle-btn" data-opp="false">Adjacent to the angle</div>
+        </div>
+      </div>
+      <div class="results">
+        <div class="result-row emph"><span class="result-label">Hypotenuse</span><span class="result-value" id="h-hyp2">&mdash;</span></div>
+        <div class="result-row"><span class="result-label">Other leg</span><span class="result-value" id="h-other">&mdash;</span></div>
+      </div>
+      <p class="note">The angle must be between 0&deg; and 90&deg; &mdash; at either end the triangle collapses and there is no answer.</p>
+    </div>
+    <p class="note">Units are whatever you enter &mdash; just stay consistent. Angles are measured from the leg, not the hypotenuse.</p>
+  </div>
+
+  <p class="note" id="offline-status" role="status">Checking offline copy…</p>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DASH = '—';
+  var $ = function (id) { return document.getElementById(id); };
+
+  function fmt(n, decimals) {
+    if (!isFinite(n)) return DASH;
+    var d = (decimals === undefined) ? 3 : decimals;
+    var p = Math.pow(10, d);
+    var r = Math.round(n * p) / p;
+    if (Object.is(r, -0)) r = 0;
+    return r.toString();
+  }
+  function lb(n) {
+    return isFinite(n) ? Math.round(n).toLocaleString() + ' lb' : DASH;
+  }
+  var toRad = function (d) { return d * Math.PI / 180; };
+  var toDeg = function (r) { return r * 180 / Math.PI; };
+  var num = function (el) { return parseFloat(el.value); };
+
+  // Wire a group of .tab / .toggle-btn children so exactly one stays active.
+  function wireGroup(container, dataKey, onPick) {
+    container.addEventListener('click', function (e) {
+      var btn = e.target.closest('.toggle-btn, .tab');
+      if (!btn || btn.parentNode !== container) return;
+      var all = container.children;
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+      btn.classList.add('active');
+      onPick(btn.dataset[dataKey]);
+    });
+  }
+
+  // ===== SECTION PROPERTIES =====
+  // Rectangular tube with radiused corners. The outside corner radius is taken
+  // as 2x the wall, the convention behind the published AISC HSS tables; the
+  // formulas below reproduce those tabulated I, S and weight values.
+  //
+  // A rounded rectangle is the full rectangle minus four "square corner minus
+  // quarter disc" slivers. Per sliver, in units of the radius R:
+  var K_A = 1 - Math.PI / 4;              // area / R^2
+  var K_Q = 1 / 6;                        // first moment about the arc centre / R^3
+  var K_I = 1 / 3 - Math.PI / 16;         // second moment about the arc centre / R^4
+  var SLIVER_Y = K_Q / K_A;               // sliver centroid offset from arc centre / R
+  var SLIVER_I = K_I - K_Q * K_Q / K_A;   // sliver I about its own centroid / R^4
+
+  function roundedRectI(b, h, r) {
+    if (b <= 0 || h <= 0) return 0;
+    var full = b * h * h * h / 12;
+    if (r <= 0) return full;
+    var area = K_A * r * r;
+    var d = h / 2 - r + SLIVER_Y * r;     // sliver centroid to neutral axis
+    return full - 4 * (SLIVER_I * Math.pow(r, 4) + area * d * d);
+  }
+  function roundedRectA(b, h, r) {
+    if (b <= 0 || h <= 0) return 0;
+    return b * h - 4 * K_A * r * r;
+  }
+
+  var CORNER_RADIUS_RATIO = 2;
+  var STEEL_DENSITY = 0.2836;             // lb/in^3
+
+  function sectionProps(outerB, outerH, t) {
+    var rOut = Math.min(CORNER_RADIUS_RATIO * t, Math.min(outerB, outerH) / 2);
+    var innerB = outerB - 2 * t;
+    var innerH = outerH - 2 * t;
+    var rIn = Math.max(rOut - t, 0);
+    if (innerB > 0 && innerH > 0) rIn = Math.min(rIn, Math.min(innerB, innerH) / 2);
+
+    var I = roundedRectI(outerB, outerH, rOut) - roundedRectI(innerB, innerH, rIn);
+    var A = roundedRectA(outerB, outerH, rOut) - roundedRectA(innerB, innerH, rIn);
+    return {
+      I: I,
+      S: I / (outerH / 2),
+      A: A,
+      weightPerFt: A * STEEL_DENSITY * 12,
+      // AISC G4: the web depth resisting shear is the flat height, h - 3t, on
+      // each of the two webs.
+      shearArea: 2 * t * Math.max(outerH - 3 * t, 0)
+    };
+  }
+
+  // ===== BEAM =====
+  var SIZES = [
+    { label: '1" square',          h: 1.0,  b: 1.0,  walls: [0.065, 0.083, 0.095, 0.120] },
+    { label: '1.25" square',       h: 1.25, b: 1.25, walls: [0.065, 0.083, 0.095, 0.120] },
+    { label: '1.5" square',        h: 1.5,  b: 1.5,  walls: [0.065, 0.083, 0.095, 0.120, 0.188] },
+    { label: '1.75" square',       h: 1.75, b: 1.75, walls: [0.083, 0.095, 0.120, 0.188] },
+    { label: '2" square',          h: 2.0,  b: 2.0,  walls: [0.065, 0.083, 0.095, 0.120, 0.188, 0.250] },
+    { label: '2.5" square',        h: 2.5,  b: 2.5,  walls: [0.095, 0.120, 0.188, 0.250] },
+    { label: '3" square',          h: 3.0,  b: 3.0,  walls: [0.095, 0.120, 0.188, 0.250] },
+    { label: '4" square',          h: 4.0,  b: 4.0,  walls: [0.120, 0.188, 0.250] },
+    { label: '2x1 rect (2" tall)', h: 2.0,  b: 1.0,  walls: [0.065, 0.083, 0.095, 0.120, 0.188] },
+    { label: '2x1 rect (1" tall)', h: 1.0,  b: 2.0,  walls: [0.065, 0.083, 0.095, 0.120, 0.188] },
+    { label: '3x2 rect (3" tall)', h: 3.0,  b: 2.0,  walls: [0.095, 0.120, 0.188, 0.250] },
+    { label: '3x2 rect (2" tall)', h: 2.0,  b: 3.0,  walls: [0.095, 0.120, 0.188, 0.250] },
+    { label: '4x2 rect (4" tall)', h: 4.0,  b: 2.0,  walls: [0.120, 0.188, 0.250] },
+    { label: '4x2 rect (2" tall)', h: 2.0,  b: 4.0,  walls: [0.120, 0.188, 0.250] },
+    { label: '5x3 rect (5" tall)', h: 5.0,  b: 3.0,  walls: [0.188, 0.250] },
+    { label: '6x2 rect (6" tall)', h: 6.0,  b: 2.0,  walls: [0.188, 0.250] }
+  ];
+
+  var E_PSI = 29e6;
+  var FY_PSI = 36000;
+  var FB_PSI = 0.6 * FY_PSI;    // 21.6 ksi allowable bending
+  var FV_PSI = 0.4 * FY_PSI;    // 14.4 ksi allowable shear
+  // Compact-flange limit for a rectangular HSS in flexure, 1.12*sqrt(E/Fy).
+  var COMPACT_LIMIT = 1.12 * Math.sqrt(E_PSI / FY_PSI);
+
+  // Per load case: load from allowable moment (P = bend * M / L), load from the
+  // deflection limit (P = limit * defl * E * I / L^3), and load from allowable
+  // shear (P = shear * V).
+  var CASES = {
+    sp: { bend: 4, defl: 48,      shear: 2, label: 'center point load, simple span' },
+    su: { bend: 8, defl: 384 / 5, shear: 2, label: 'total uniform load, simple span' },
+    cp: { bend: 1, defl: 3,       shear: 1, label: 'point load at free end, cantilever' },
+    cu: { bend: 2, defl: 8,       shear: 1, label: 'total uniform load, cantilever' }
+  };
+  var beamCase = 'sp';
+
+  var sizeSel = $('b-size');
+  var wallSel = $('b-wall');
+  var spanInput = $('b-span');
+
+  SIZES.forEach(function (size, index) {
+    var opt = document.createElement('option');
+    opt.value = index;
+    opt.textContent = size.label;
+    sizeSel.appendChild(opt);
+  });
+  sizeSel.value = '1';
+
+  function populateWalls() {
+    var size = SIZES[parseInt(sizeSel.value, 10)];
+    var previous = parseFloat(wallSel.value);
+    wallSel.innerHTML = '';
+    size.walls.forEach(function (wall) {
+      var opt = document.createElement('option');
+      opt.value = String(wall);
+      opt.textContent = wall.toFixed(3) + '" wall';
+      wallSel.appendChild(opt);
+    });
+    if (size.walls.indexOf(previous) !== -1) wallSel.value = String(previous);
+    else if (size.walls.indexOf(0.120) !== -1) wallSel.value = '0.12';
+    else wallSel.value = String(size.walls[0]);
+  }
+
+  function setBeamBlank(message) {
+    ['b-cap', 'b-bend', 'b-shear', 'b-defload', 'b-deflat'].forEach(function (id) {
+      $(id).textContent = DASH;
+    });
+    $('b-rated').textContent = DASH;
+    $('b-ratednote').textContent = '';
+    $('b-gov').textContent = '';
+    $('b-deflnote').textContent = message;
+  }
+
+  function calcBeam() {
+    var size = SIZES[parseInt(sizeSel.value, 10)];
+    var t = parseFloat(wallSel.value);
+    var L = num(spanInput);
+    var deflDenom = parseFloat($('b-defl').value);
+    var dyn = parseFloat($('b-dyn').value) || 1;
+    var c = CASES[beamCase];
+
+    var props = sectionProps(size.b, size.h, t);
+    $('b-I').textContent = fmt(props.I, 4) + ' in⁴';
+    $('b-S').textContent = fmt(props.S, 4) + ' in³';
+    $('b-wt').textContent = fmt(props.weightPerFt, 2) + ' lb/ft';
+
+    // A span of zero or less makes every capacity formula divide by zero.
+    var spanValid = isFinite(L) && L > 0;
+    spanInput.classList.toggle('invalid', !spanValid);
+    if (!spanValid) {
+      setBeamBlank('enter a span greater than zero');
+      $('b-warn').hidden = true;
+      return;
+    }
+
+    var deflLimit = L / deflDenom;
+    var pBend = c.bend * (FB_PSI * props.S) / L;
+    var pShear = c.shear * (FV_PSI * props.shearArea);
+    var pDefl = deflLimit * c.defl * E_PSI * props.I / Math.pow(L, 3);
+
+    var governing = Math.min(pBend, pShear, pDefl);
+    var governedBy = governing === pBend ? 'bending'
+                   : governing === pShear ? 'shear'
+                   : 'deflection';
+    // Deflection at the governing load, from the same case coefficient.
+    var deflAtCapacity = governing * Math.pow(L, 3) / (c.defl * E_PSI * props.I);
+    var rated = governing / dyn;
+
+    $('b-rated').textContent = lb(rated);
+    $('b-ratednote').textContent = c.label + ' · ' + dyn.toFixed(1) + '× dynamic factor applied';
+    $('b-cap').textContent = lb(governing);
+    $('b-gov').textContent = 'governed by ' + governedBy;
+    $('b-bend').textContent = lb(pBend);
+    $('b-shear').textContent = lb(pShear);
+    $('b-defload').textContent = lb(pDefl);
+    $('b-deflnote').textContent = 'max ' + fmt(deflLimit, 3) + '" over ' + fmt(L, 2) + '" span';
+    $('b-deflat').textContent = fmt(deflAtCapacity, 3) + ' in';
+
+    // 0.6*Fy assumes the compression flange does not buckle locally first.
+    var flatFlange = size.b - 3 * t;
+    var warnEl = $('b-warn');
+    if (flatFlange / t > COMPACT_LIMIT) {
+      warnEl.textContent = 'Flange width/thickness is ' + fmt(flatFlange / t, 1) +
+        ', past the compact limit of ' + fmt(COMPACT_LIMIT, 1) +
+        '. Local buckling can beat the 21.6 ksi allowable — treat the bending number as optimistic.';
+      warnEl.hidden = false;
+    } else {
+      warnEl.hidden = true;
+    }
+  }
+
+  wireGroup($('b-case'), 'case', function (picked) {
+    beamCase = picked;
+    calcBeam();
+  });
+  sizeSel.addEventListener('change', function () { populateWalls(); calcBeam(); });
+  wallSel.addEventListener('change', calcBeam);
+  spanInput.addEventListener('input', calcBeam);
+  $('b-defl').addEventListener('change', calcBeam);
+  $('b-dyn').addEventListener('change', calcBeam);
+
+  // ===== TABS =====
+  wireGroup($('main-tabs'), 'tab', function (picked) {
+    var panels = document.querySelectorAll('.panel');
+    for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    $('panel-' + picked).classList.add('active');
+  });
+
+  // ===== ANGLE =====
+  function calcAngle() {
+    var a = num($('a-angle'));
+    var ok = isFinite(a);
+    var out = function (id, value) { $(id).textContent = ok ? fmt(value) + '°' : DASH; };
+    out('a-comp', 90 - a);
+    out('a-supp', 180 - a);
+    out('a-half', a / 2);
+    out('a-double', a * 2);
+    out('a-reflex', 360 - a);
+  }
+  $('a-angle').addEventListener('input', calcAngle);
+
+  function calcMiter() {
+    var corner = num($('a-corner'));
+    var ok = isFinite(corner) && corner > 0 && corner < 180;
+    $('a-corner').classList.toggle('invalid', !ok && $('a-corner').value !== '');
+    $('a-mitercut').textContent = ok ? fmt(corner / 2) + '°' : DASH;
+    $('a-miterset').textContent = ok ? fmt(90 - corner / 2) + '°' : DASH;
+  }
+  $('a-corner').addEventListener('input', calcMiter);
+
+  // ===== HYPOTENUSE =====
+  var hypOpposite = true;
+
+  wireGroup($('hyp-tabs'), 'htab', function (picked) {
+    $('hyp-legs').hidden = picked !== 'legs';
+    $('hyp-legangle').hidden = picked !== 'legangle';
+  });
+  wireGroup($('h-oppgroup'), 'opp', function (picked) {
+    hypOpposite = picked === 'true';
+    calcHypAngle();
+  });
+
+  function calcHypLegs() {
+    var a = num($('h-lega'));
+    var b = num($('h-legb'));
+    if (!isFinite(a) || !isFinite(b) || a < 0 || b < 0 || (a === 0 && b === 0)) {
+      $('h-hyp1').textContent = DASH;
+      $('h-anga').textContent = DASH;
+      $('h-angb').textContent = DASH;
+      return;
+    }
+    var angleAtB = toDeg(Math.atan2(a, b));
+    $('h-hyp1').textContent = fmt(Math.sqrt(a * a + b * b));
+    $('h-anga').textContent = fmt(angleAtB) + '°';
+    $('h-angb').textContent = fmt(90 - angleAtB) + '°';
+  }
+  $('h-lega').addEventListener('input', calcHypLegs);
+  $('h-legb').addEventListener('input', calcHypLegs);
+
+  function calcHypAngle() {
+    var known = num($('h-known'));
+    var angle = num($('h-angle'));
+    var angleInput = $('h-angle');
+    // sin/cos of 0 and 90 degrees are never exactly 0 in floating point, so
+    // range-check the angle rather than testing the trig result against zero.
+    var ok = isFinite(known) && known > 0 && isFinite(angle) && angle > 0 && angle < 90;
+    angleInput.classList.toggle('invalid', angleInput.value !== '' && isFinite(angle) && (angle <= 0 || angle >= 90));
+    if (!ok) {
+      $('h-hyp2').textContent = DASH;
+      $('h-other').textContent = DASH;
+      return;
+    }
+    var rad = toRad(angle);
+    var hyp = hypOpposite ? known / Math.sin(rad) : known / Math.cos(rad);
+    var other = hypOpposite ? known / Math.tan(rad) : known * Math.tan(rad);
+    $('h-hyp2').textContent = fmt(hyp);
+    $('h-other').textContent = fmt(other);
+  }
+  $('h-known').addEventListener('input', calcHypAngle);
+  $('h-angle').addEventListener('input', calcHypAngle);
+
+  // ===== INIT =====
+  populateWalls();
+  calcBeam();
+  calcAngle();
+  calcMiter();
+  calcHypLegs();
+  calcHypAngle();
+})();
+</script>
+
+<script>
+// Register the service worker that makes this work with no signal. It caches the
+// page on first load and serves from that copy afterwards, so the shop tool opens
+// whether or not there is a bar of service.
+(function () {
+  var status = document.getElementById('offline-status');
+  function say(text, ready) {
+    if (!status) return;
+    status.textContent = text;
+    status.style.color = ready ? 'var(--accent)' : 'var(--dim)';
+  }
+  if (!('serviceWorker' in navigator)) {
+    // file:// and older browsers land here; the page still works, just not cached.
+    say('Offline caching unavailable here — open the hosted page to cache it.', false);
+    return;
+  }
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').then(function (reg) {
+      if (navigator.serviceWorker.controller) {
+        say('Saved for offline use — this page works with no signal.', true);
+      } else {
+        reg.addEventListener('updatefound', function () {
+          var sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', function () {
+            if (sw.state === 'activated' || sw.state === 'installed') {
+              say('Saved for offline use — this page works with no signal.', true);
+            }
+          });
+        });
+        say('Saving for offline use…', false);
+      }
+    }).catch(function () {
+      say('Could not save an offline copy — needs a connection to try again.', false);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#05080a">
+<title>TARGET :: AXLE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #05080a;
+    --deep: #0a1418;
+    --panel: #0c1a1c;
+    --therm-hot: #ff3b1f;
+    --therm-warm: #ff9d2e;
+    --therm-mid: #ffe14d;
+    --hud: #6fff5a;
+    --hud-dim: #2f7a2a;
+    --scan: #9dffb0;
+    --plasma: #ff2a1f;
+    --ice: #5fe8ff;
+    --bone: #cfe8d8;
+    --murk: #4d7060;
+    --mono: 'Share Tech Mono', 'SFMono-Regular', ui-monospace, 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--void);
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(255,59,31,0.10), transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(111,255,90,0.06), transparent 55%);
+    color: var(--hud);
+    font-family: var(--mono);
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* scanline overlay */
+  body::before {
+    content:''; position: fixed; inset: 0; pointer-events: none; z-index: 99;
+    background: repeating-linear-gradient(
+      to bottom, rgba(111,255,90,0.045) 0px, rgba(111,255,90,0.045) 1px,
+      transparent 1px, transparent 4px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blink { animation: none; }
+  }
+  .wrap {
+    max-width: 700px; margin: 0 auto; position: relative;
+    padding: 16px calc(12px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  }
+
+  /* --- HUD panel with corner brackets --- */
+  .panel {
+    background: linear-gradient(180deg, rgba(12,26,28,0.95), rgba(5,8,10,0.95));
+    border: 1px solid rgba(111,255,90,0.35);
+    padding: 16px; margin-bottom: 20px; position: relative;
+    box-shadow: inset 0 0 40px rgba(111,255,90,0.05), 0 0 18px rgba(0,0,0,0.8);
+  }
+  .panel::before, .panel::after {
+    content:''; position:absolute; width:16px; height:16px; pointer-events:none;
+    border-color: var(--therm-hot); border-style: solid;
+  }
+  .panel::before { top:-1px; left:-1px; border-width: 2px 0 0 2px; }
+  .panel::after  { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
+  .panel-title {
+    font-size: 12px; color: var(--therm-mid);
+    letter-spacing: 0.28em; text-transform: uppercase;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 9px;
+  }
+  .panel-title::after {
+    content:''; flex:1; height:1px;
+    background: linear-gradient(90deg, rgba(255,225,77,0.5), transparent);
+  }
+
+  .header {
+    border: 1px solid var(--therm-hot);
+    background: linear-gradient(180deg, rgba(255,59,31,0.14), rgba(5,8,10,0.9));
+    padding: 18px 16px; margin-bottom: 20px; text-align: center; position: relative;
+    box-shadow: 0 0 26px rgba(255,59,31,0.22), inset 0 0 30px rgba(255,59,31,0.06);
+  }
+  .header::before, .header::after {
+    content:''; position:absolute; width:18px; height:18px;
+    border-color: var(--hud); border-style: solid;
+  }
+  .header::before { top:-1px; left:-1px; border-width: 2px 0 0 2px; }
+  .header::after  { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
+  .header .co {
+    font-size: 10px; color: var(--therm-warm);
+    letter-spacing: 0.34em; margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 24px; margin: 0; letter-spacing: 0.16em;
+    color: var(--hud); text-shadow: 0 0 12px rgba(111,255,90,0.7);
+  }
+  .subtitle {
+    font-size: 10.5px; color: var(--murk);
+    letter-spacing: 0.16em; margin: 12px 0 0;
+  }
+  .blink { animation: bl 1.4s steps(1) infinite; }
+  @keyframes bl { 0%,60%{opacity:1} 61%,100%{opacity:0.15} }
+
+  .field { margin-bottom: 14px; }
+  label {
+    display: block; font-size: 10px; color: var(--murk);
+    margin-bottom: 6px; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  select {
+    width: 100%; background: rgba(5,8,10,0.9);
+    border: 1px solid var(--hud-dim); border-radius: 0;
+    color: var(--hud); padding: 11px 9px; font-size: 15px;
+    font-family: var(--mono);
+    letter-spacing: 0.08em; outline: none;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M0 0l6 8 6-8z' fill='%23ff9d2e'/></svg>");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;
+  }
+  select:focus-visible { outline: 2px solid var(--therm-warm); outline-offset: 1px; }
+  /* TARGETING inputs — thermal highlight */
+  select.numeric {
+    border-color: var(--therm-warm);
+    background-color: rgba(255,157,46,0.09);
+    color: var(--therm-mid);
+    text-shadow: 0 0 8px rgba(255,225,77,0.55);
+    box-shadow: inset 0 0 12px rgba(255,157,46,0.14);
+  }
+  select.numeric:focus {
+    border-color: var(--therm-hot); color: #fff;
+    box-shadow: inset 0 0 16px rgba(255,59,31,0.25), 0 0 12px rgba(255,59,31,0.4);
+  }
+  select.picker {
+    border-color: var(--ice); color: var(--ice);
+    background-color: rgba(95,232,255,0.07);
+  }
+
+  .add-btn {
+    width: 100%; padding: 13px;
+    border: 1px solid var(--plasma); background: rgba(255,42,31,0.10);
+    color: var(--therm-warm); font-size: 12px;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    font-family: var(--mono);
+    cursor: pointer; border-radius: 0;
+    text-shadow: 0 0 10px rgba(255,157,46,0.6);
+  }
+  .add-btn:active { background: var(--plasma); color: #fff; }
+
+  .item-card {
+    border: 1px solid rgba(111,255,90,0.22);
+    border-left: 3px solid var(--hud-dim);
+    padding: 11px; margin-bottom: 11px;
+    background: rgba(10,20,24,0.6);
+  }
+  .item-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+  .swatch {
+    width: 28px; height: 28px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: bold; color: var(--void);
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  }
+  .item-head select { flex: 1; font-size: 12px; padding: 9px; letter-spacing: 0.1em; }
+  .del-btn {
+    padding: 9px 12px; border: 1px solid var(--plasma);
+    color: var(--plasma); background: rgba(255,42,31,0.08);
+    cursor: pointer; font-size: 13px; line-height: 1; flex-shrink: 0;
+    font-family: var(--mono);
+  }
+  .del-btn:active:not(:disabled) { background: var(--plasma); color: #fff; }
+  .del-btn:disabled { opacity: 0.3; cursor: default; }
+  .item-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+  .item-grid.no-front { grid-template-columns: 1fr 1fr; }
+  .item-cg {
+    font-size: 10px; color: var(--murk); margin-top: 9px;
+    letter-spacing: 0.1em; border-top: 1px dashed rgba(111,255,90,0.18); padding-top: 8px;
+  }
+
+  /* --- thermal threat meter --- */
+  .meter-wrap { margin-bottom: 16px; }
+  .meter-label {
+    font-size: 10px; color: var(--murk);
+    margin-bottom: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .meter {
+    display: flex; gap: 2px; background: rgba(5,8,10,0.9);
+    border: 1px solid var(--hud-dim); padding: 4px;
+  }
+  .seg { flex: 1; height: 20px; background: #0e1b1a; transition: background 0.1s; }
+
+  .readout {
+    background: rgba(5,8,10,0.85);
+    border: 1px solid var(--therm-hot);
+    padding: 16px; margin-bottom: 16px; text-align: center; position: relative;
+    box-shadow: inset 0 0 26px rgba(255,59,31,0.10);
+  }
+  .readout-label {
+    font-size: 10px; color: var(--therm-warm);
+    letter-spacing: 0.3em; margin-bottom: 10px; text-transform: uppercase;
+  }
+  .readout-num {
+    font-size: 38px; line-height: 1.1; color: var(--hud);
+    letter-spacing: 0.06em; text-shadow: 0 0 18px currentColor;
+  }
+  .readout-sub { font-size: 11px; letter-spacing: 0.16em; color: var(--murk); margin-top: 10px; }
+
+  .results { margin-top: 6px; }
+  .result-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 0; border-bottom: 1px solid rgba(111,255,90,0.15); gap: 10px;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { font-size: 12px; letter-spacing: 0.14em; color: var(--bone); text-transform: uppercase; }
+  .result-note { font-size: 10px; color: var(--murk); margin-top: 5px; letter-spacing: 0.1em; }
+  .result-value {
+    font-size: 17px; color: var(--ice); white-space: nowrap;
+    letter-spacing: 0.06em; text-shadow: 0 0 10px rgba(95,232,255,0.45);
+  }
+  .emph {
+    background: linear-gradient(90deg, rgba(255,59,31,0.16), transparent);
+    margin: 0 -16px; padding: 13px 16px;
+    border-bottom: 1px solid rgba(255,59,31,0.3);
+  }
+  .emph .result-label { color: var(--therm-mid); }
+  .emph .result-value { font-size: 21px; color: var(--therm-mid); text-shadow: 0 0 14px rgba(255,225,77,0.6); }
+
+  .alert {
+    border: 1px solid var(--plasma); background: rgba(255,42,31,0.12);
+    color: var(--therm-warm); font-size: 11px; line-height: 1.7;
+    padding: 11px 12px; margin-bottom: 14px; letter-spacing: 0.1em;
+  }
+  .alert[hidden] { display: none; }
+
+  .note {
+    color: var(--murk); font-size: 10.5px;
+    line-height: 1.9; margin-top: 16px; letter-spacing: 0.07em;
+  }
+  .note strong { color: var(--therm-warm); }
+  .diagram { width: 100%; height: 250px; display: block; margin-bottom: 10px; }
+  .legend {
+    font-size: 10px; color: var(--murk); display: flex;
+    gap: 18px; letter-spacing: 0.14em; flex-wrap: wrap;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="co">TURMANATOR IRONWORKS</div>
+    <h1>AXLE&nbsp;TARGETING</h1>
+    <p class="subtitle"><span class="blink">&#9670;</span> MASS ACQUIRED &mdash; TRACKING CENTER OF GRAVITY <span class="blink">&#9670;</span></p>
+  </div>
+
+  <p style="margin:-8px 0 18px"><a href="../" style="color:var(--hud);font-size:11px;letter-spacing:0.18em;text-decoration:none;border:1px solid var(--hud-dim);padding:9px 12px;display:inline-block">&larr; FAB CALCULATORS</a></p>
+
+  <div class="panel">
+    <div class="panel-title">Thermal Profile</div>
+    <svg class="diagram" id="dg" viewBox="0 0 700 250" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Side view of the trailer showing load positions, mass center and axle"></svg>
+    <div class="legend">
+      <span style="color:#ffe14d;">&#9650; AXLE</span>
+      <span style="color:#6fff5a;">&#9678; MASS CENTER</span>
+      <span style="color:#ff2a1f;">&#9632; COUPLER</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Payload Manifest</div>
+    <p class="note" style="margin-top:0; margin-bottom:15px;">EVERY <strong>FRONT AT</strong> IS RANGED FROM THE COUPLER BALL TO THE <strong>LEADING EDGE</strong> OF THE PART. MASS CENTER IS COMPUTED FROM ITS LENGTH.</p>
+    <div id="ax-items"></div>
+    <div class="field" style="margin-top:16px; margin-bottom:10px;">
+      <label for="ax-picker">Acquire Part</label>
+      <select class="picker" id="ax-picker"></select>
+    </div>
+    <button class="add-btn" id="ax-add" type="button">&#9656; Lock On</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Axle Config</div>
+    <div class="row2">
+      <div class="field" style="margin-bottom:0;">
+        <label for="ax-config">Axle Count</label>
+        <select id="ax-config">
+          <option value="1">SINGLE</option>
+          <option value="2">TANDEM</option>
+          <option value="3">TRIPLE</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label for="ax-mode">Locate Axle By</label>
+        <select id="ax-mode">
+          <option value="direct" selected>WHEEL CENTER</option>
+          <option value="bracket">BRACKET</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field" id="ax-direct-wrap" style="margin-top:14px; margin-bottom:0;">
+      <label for="ax-pos">Wheel Center (IN)</label>
+      <select class="numeric" id="ax-pos"></select>
+      <div class="result-note" style="margin-top:6px;">MEASURED COUPLER TO THE WHEEL CENTER &mdash; THE CONTACT PATCH IS WHAT CARRIES THE LOAD, NOT THE BRACKET.</div>
+    </div>
+
+    <div id="ax-bracket-wrap" hidden>
+      <div class="field" style="margin-top:14px;">
+        <label for="ax-bracket">Bracket At (IN)</label>
+        <select class="numeric" id="ax-bracket"></select>
+        <div class="result-note" style="margin-top:6px;">COUPLER TO THE TORSION BAR CENTER. ON A DEXTER TORFLEX THAT CENTER SITS 1.33&quot; BELOW THE TOP OF THE BRACKET.</div>
+      </div>
+      <div class="row2">
+        <div class="field" style="margin-bottom:0;">
+          <label for="ax-arm">Arm Length (IN)</label>
+          <select class="numeric" id="ax-arm"></select>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="ax-start">Start Angle</label>
+          <select id="ax-start"></select>
+        </div>
+      </div>
+      <div class="row2" style="margin-top:10px;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="ax-orient">Arm Points</label>
+          <select id="ax-orient">
+            <option value="trailing" selected>TRAILING</option>
+            <option value="leading">LEADING</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="ax-loadstate">Ride State</label>
+          <select id="ax-loadstate">
+            <option value="loaded" selected>FULL LOAD</option>
+            <option value="empty">EMPTY</option>
+          </select>
+        </div>
+      </div>
+      <div class="result-note" id="ax-wheelcalc" style="margin-top:10px;"></div>
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label for="ax-axlewt">Axle Assembly WT (LB)</label>
+      <select class="numeric" id="ax-axlewt"></select>
+      <div class="result-note" style="margin-top:6px;">AXLE, SPRINGS, HUBS, TIRES &mdash; THE MASS THAT MOVES WHEN THE AXLE MOVES. TYPICAL 3500 LB AXLE RUNS 200-250 LB. LEAVE 0 IF IT IS ALREADY IN THE FRAME WEIGHT.</div>
+    </div>
+    <div class="field" style="margin-bottom:0;">
+      <label for="ax-target">Target Tongue Weight</label>
+      <select id="ax-target">
+        <option value="0.10">10% - MINIMUM</option>
+        <option value="0.11">11%</option>
+        <option value="0.12">12%</option>
+        <option value="0.13" selected>13% - OPTIMAL</option>
+        <option value="0.14">14%</option>
+        <option value="0.15">15%</option>
+        <option value="0.18">18%</option>
+        <option value="0.20">20% - HEAVY</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Targeting Readout</div>
+
+    <div class="alert" id="ax-alert" hidden></div>
+
+    <div class="meter-wrap">
+      <div class="meter-label" id="ax-meterlabel">Tongue Load Signature</div>
+      <div class="meter" id="ax-meter" role="img" aria-label="Tongue load percentage meter"></div>
+    </div>
+
+    <div class="readout">
+      <div class="readout-label">Tongue Weight</div>
+      <div class="readout-num" id="ax-tw">&mdash;</div>
+      <div class="readout-sub" id="ax-twpct"></div>
+    </div>
+
+    <div class="results">
+      <div class="result-row emph"><div><span class="result-label">Axle Should Sit At</span><div class="result-note" id="ax-recnote"></div></div><span class="result-value" id="ax-rec">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Move Axle By</span><div class="result-note">FROM CURRENT POSITION</div></div><span class="result-value" id="ax-move">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Gross Mass</span><span class="result-value" id="ax-gross">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Mass Center</span><div class="result-note" id="ax-cgnote"></div></div><span class="result-value" id="ax-cg">&mdash;</span></div>
+      <div class="result-row"><div><span class="result-label">Axle Load</span><div class="result-note" id="ax-pernote"></div></div><span class="result-value" id="ax-axleload">&mdash;</span></div>
+    </div>
+
+    <p class="note">UNDER 10% IS THE DANGEROUS END &mdash; THAT'S WHERE SWAY STARTS, AND IT GETS WORSE WITH SPEED. OVER ABOUT 15% YOU START UNLOADING THE TOW VEHICLE'S FRONT AXLE AND LOSING STEERING. HOLD <strong>10-15% OF GROSS</strong>.<br><br>EACH PART'S MASS CENTER IS ASSUMED AT MID-LENGTH. CLOSE ENOUGH FOR BOXES AND TANKS; A KAYAK OR LOADED RACK CAN SIT OFF-CENTER, SO NUDGE THE FRONT POSITION IF YOU KNOW BETTER.<br><br>SET <strong>AXLE ASSEMBLY WT</strong> AND THE AXLE'S OWN MASS IS MODELLED RIDING AT THE AXLE. IT CARRIES ENTIRELY ON ITSELF, SO IT ADDS NOTHING TO TONGUE WEIGHT WHILE STILL COUNTING IN GROSS &mdash; WHICH PUSHES THE TARGET POSITION AFT. A 200 LB AXLE UNDER 830 LB OF LOAD MOVES IT ABOUT <strong>3.8&quot;</strong>. DO NOT ALSO COUNT THE AXLE IN THE FRAME WEIGHT.<br><br>TORSION AXLES CARRY THE LOAD AT THE WHEEL, NOT THE BRACKET. THE TRAILING ARM PUTS THE WHEEL CENTER ROUGHLY 4.4-6.0&quot; AFT OF THE TORSION BAR ON A 6&quot; ARM, AND THAT REACH <em>CHANGES</em> AS THE TRAILER LOADS AND THE ARM SWINGS UP. SET <strong>LOCATE AXLE BY</strong> TO <strong>TORSION BRACKET</strong> AND IT IS WORKED OUT FOR YOU.<br><br><strong>TANDEM AND TRIPLE TORSION AXLES DO NOT EQUALIZE.</strong> THERE IS NO EQUALIZER BETWEEN THEM THE WAY LEAF SPRINGS HAVE ONE, SO THE PER-AXLE SPLIT BELOW IS NOMINAL. UNEVEN RIDE HEIGHT OR AN OUT-OF-LEVEL TRAILER PUTS MORE ON ONE AXLE THAN THE OTHER. THE GROUP IS STILL BALANCED AS ONE SUPPORT AT THE GROUP CENTER FOR TONGUE WEIGHT.<br><br>PRESET WEIGHTS ARE TYPICAL STARTING NUMBERS &mdash; WEIGH THE REAL PART WHEN IT MATTERS.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DASH = '—';
+
+  /* ===== tuning constants — every threshold and colour lives here ===== */
+  var TONGUE = {
+    MIN_PCT: 10,        // below this: sway risk
+    MAX_PCT: 15,        // above this: unloads the tow vehicle's front axle
+    CAUTION_LOW: 8,     // outside MIN/MAX but not yet critical
+    CAUTION_HIGH: 18,
+    METER_MAX_PCT: 25   // full-scale reading on the thermal meter
+  };
+  var COLOR = {
+    GOOD: '#6fff5a',
+    WARN: '#ffe14d',
+    BAD:  '#ff2a1f',
+    ICE:  '#5fe8ff',
+    MURK: '#4d7060',
+    SEG_OFF: '#0e1b1a',
+    SEG_BAND: '#1b3a1e'
+  };
+  var GEO = {
+    RAIL_Y: 170,        // frame rail baseline in SVG units
+    X0: 45,             // left margin: coupler sits here
+    XW: 625,            // drawable width
+    RACK_TOP: 78,
+    WHEEL_R: 18,
+    TONGUE_FRACTION: 0.32,  // deck rails start this far back along the frame
+    TICK_IN: 24,            // grid tick every 24"
+    SPAN_MARGIN: 1.08       // draw 8% past the furthest feature
+  };
+  var METER_SEGS = 22;
+  // Solved from the Dexter Torflex full-load application chart: the H column
+  // (top of bracket down to hub centre) is identical across tire sizes, so it
+  // is arm geometry alone. Fitting H = k + L*sin(start - rise) over all seven
+  // published start angles gives L = 6.00", rise = 20.8", k = 1.33", to an RMS
+  // of 0.017". Arm length varies by series, so it stays an input.
+  var TORSION = {
+    FULL_LOAD_RISE_DEG: 20.8,
+    BAR_BELOW_BRACKET_TOP_IN: 1.33,
+    START_ANGLES: [45, 32, 22.5, 10, 0, -10, -22.5]
+  };
+  function startAngleLabel(deg) {
+    if (deg > 0) return fmt(deg, 1) + '\u00B0 DOWN';
+    if (deg < 0) return fmt(-deg, 1) + '\u00B0 UP';
+    return '0\u00B0 LEVEL';
+  }
+  // Horizontal reach, torsion bar centre to wheel centre.
+  function wheelReach(armLen, startDeg, loaded) {
+    var theta = startDeg - (loaded ? TORSION.FULL_LOAD_RISE_DEG : 0);
+    return armLen * Math.cos(theta * Math.PI / 180);
+  }
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function fmt(n, decimals) {
+    if (!isFinite(n)) return DASH;
+    var d = (decimals === undefined) ? 3 : decimals;
+    var p = Math.pow(10, d);
+    var r = Math.round(n * p) / p;
+    if (Object.is(r, -0)) r = 0;
+    return r.toString();
+  }
+  // Fixed decimals, for readouts where a trailing zero carries meaning (6.00").
+  function fmtFixed(n, d) { return isFinite(n) ? n.toFixed(d) : DASH; }
+  function lbs(n) {
+    return isFinite(n) ? Math.round(n).toLocaleString() + ' LB' : DASH;
+  }
+
+  /* ===== catalog =====
+     w = typical weight (lb), x = default distance coupler -> leading edge (in),
+     len = overall length (in), ht = height used for the drawing only. */
+  var CATALOG = [
+    { key:'trailer',  label:'TRAILER FRAME',    w:450, x:0,   len:168, ht:8,  shape:'frame', level:'deck',    color:'#5fe8ff', tag:'F', fixedFront:true },
+    { key:'kayak',    label:'KAYAK',            w:80,  x:78,  len:132, ht:14, shape:'boat',  level:'deck',    color:'#6fff5a', tag:'K' },
+    { key:'upright',  label:'UPRIGHT / RACK',   w:85,  x:96,  len:60,  ht:46, shape:'rack',  level:'rack',    color:'#c9b6ff', tag:'U' },
+    { key:'cargobox', label:'CARGO BOX (RACK)', w:60,  x:104, len:70,  ht:14, shape:'box',   level:'rackTop', color:'#9db8b0', tag:'C' },
+    { key:'rtt',      label:'ROOFTOP TENT',     w:135, x:100, len:52,  ht:16, shape:'box',   level:'rackTop', color:'#c9b6ff', tag:'T' },
+    { key:'storage',  label:'STORAGE BOX',      w:75,  x:26,  len:30,  ht:14, shape:'box',   level:'tongue',  color:'#ff9d2e', tag:'S' },
+    { key:'toolbox',  label:'TOOLBOX (TONGUE)', w:90,  x:20,  len:24,  ht:12, shape:'box',   level:'tongue',  color:'#ff9d2e', tag:'B' },
+    { key:'spare',    label:'SPARE TIRE',       w:45,  x:96,  len:26,  ht:26, shape:'wheel', level:'deck',    color:'#9db8b0', tag:'O' },
+    { key:'jack',     label:'TONGUE JACK',      w:22,  x:14,  len:5,   ht:24, shape:'jack',  level:'tongue',  color:'#ffe14d', tag:'J' },
+    { key:'battery',  label:'BATTERY BOX',      w:65,  x:18,  len:14,  ht:11, shape:'box',   level:'tongue',  color:'#ff2a1f', tag:'+' },
+    { key:'cooler',   label:'COOLER (FULL)',    w:70,  x:60,  len:26,  ht:15, shape:'box',   level:'deck',    color:'#5fe8ff', tag:'L' },
+    { key:'water',    label:'WATER TANK',       w:220, x:70,  len:30,  ht:16, shape:'tank',  level:'deck',    color:'#3aa0ff', tag:'W' },
+    { key:'fuel',     label:'FUEL CANS',        w:45,  x:34,  len:14,  ht:15, shape:'box',   level:'deck',    color:'#ff2a1f', tag:'G' },
+    { key:'genset',   label:'GENERATOR',        w:110, x:40,  len:22,  ht:16, shape:'box',   level:'deck',    color:'#ff9d2e', tag:'E' },
+    { key:'gear',     label:'GEAR / CARGO',     w:150, x:70,  len:40,  ht:15, shape:'box',   level:'deck',    color:'#ffe14d', tag:'*' },
+    { key:'custom',   label:'CUSTOM ITEM',      w:100, x:60,  len:24,  ht:14, shape:'box',   level:'deck',    color:'#cfe8d8', tag:'?' }
+  ];
+  function catOf(key) {
+    for (var i = 0; i < CATALOG.length; i++) if (CATALOG[i].key === key) return CATALOG[i];
+    return CATALOG[CATALOG.length - 1];
+  }
+
+  /* ===== option grids =====
+     Fine at the low end so small parts land on an exact value: a 22 lb jack
+     must be selectable as 22, not silently rounded to 20 on screen while the
+     math keeps using 22. */
+  function buildRange(spec) {
+    var vals = [], i, seg;
+    for (seg = 0; seg < spec.length; seg++) {
+      for (i = spec[seg][0]; i <= spec[seg][1]; i += spec[seg][2]) {
+        if (vals.length === 0 || vals[vals.length - 1] !== i) vals.push(i);
+      }
+    }
+    return vals;
+  }
+  var WEIGHTS   = buildRange([[0,100,1],[100,500,5],[500,2000,25],[2000,15000,100]]);
+  var POSITIONS = buildRange([[0,300,1],[300,400,2]]);
+  var LENGTHS   = buildRange([[1,100,1],[100,300,2]]);
+  var AXLE_WTS  = buildRange([[0,100,5],[100,600,10],[600,2000,50]]);
+  var ARM_LENS  = buildRange([[3,12,0.25]]).map(function (v) { return Math.round(v * 100) / 100; });
+
+  function nearestIn(list, value) {
+    var best = list[0], bestDist = Infinity;
+    for (var i = 0; i < list.length; i++) {
+      var d = Math.abs(list[i] - value);
+      if (d < bestDist) { bestDist = d; best = list[i]; }
+    }
+    return best;
+  }
+
+  // Build a select whose options are exactly `vals`. The caller has already
+  // snapped the state, so the shown value always equals the computed one.
+  function fillSelect(sel, vals, chosen, suffix, decimals) {
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < vals.length; i++) {
+      var o = document.createElement('option');
+      o.value = String(vals[i]);
+      o.textContent = (decimals === undefined ? vals[i].toLocaleString() : vals[i].toFixed(decimals)) + (suffix || '');
+      frag.appendChild(o);
+    }
+    sel.innerHTML = '';
+    sel.appendChild(frag);
+    sel.value = String(chosen);
+  }
+
+  /* ===== state =====
+     Every item is snapped to the option grids at creation, so state and display
+     can never disagree. */
+  function makeItem(key) {
+    var c = catOf(key);
+    return {
+      key: key,
+      w:   nearestIn(WEIGHTS, c.w),
+      x:   c.fixedFront ? 0 : nearestIn(POSITIONS, c.x),
+      len: nearestIn(LENGTHS, c.len)
+    };
+  }
+  var axItems = ['trailer', 'kayak', 'upright', 'cargobox', 'toolbox', 'battery'].map(makeItem);
+
+  function lenOf(it) { return it.len; }
+  function cgOf(it) { return it.x + it.len / 2; }
+
+  /* ===== manifest UI ===== */
+  var pickerSel = $('ax-picker');
+  (function () {
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < CATALOG.length; i++) {
+      var o = document.createElement('option');
+      o.value = CATALOG[i].key;
+      o.textContent = CATALOG[i].label + '  [' + CATALOG[i].w + ' LB]';
+      frag.appendChild(o);
+    }
+    pickerSel.appendChild(frag);
+    pickerSel.value = 'storage';
+  })();
+
+  $('ax-add').addEventListener('click', function () {
+    axItems.push(makeItem(pickerSel.value));
+    renderAxItems();
+    calcAxle();
+  });
+
+  (function () {
+    var m = $('ax-meter');
+    for (var i = 0; i < METER_SEGS; i++) {
+      var s = document.createElement('div');
+      s.className = 'seg';
+      m.appendChild(s);
+    }
+  })();
+
+  function cgNoteText(it, cat) {
+    var span = cat.fixedFront
+      ? '▸ RUNS COUPLER TO ' + lenOf(it) + '"'
+      : '▸ SPANS ' + it.x + '" → ' + (it.x + lenOf(it)) + '"';
+    return span + '   •   MASS CENTER ' + fmt(cgOf(it), 1) + '"';
+  }
+
+  function buildCard(idx) {
+    var it = axItems[idx];
+    var cat = catOf(it.key);
+
+    var card = document.createElement('div');
+    card.className = 'item-card';
+    card.style.borderLeftColor = cat.color;
+
+    var head = document.createElement('div');
+    head.className = 'item-head';
+
+    var sw = document.createElement('div');
+    sw.className = 'swatch';
+    sw.style.background = cat.color;
+    sw.textContent = cat.tag;
+
+    var kindSel = document.createElement('select');
+    kindSel.setAttribute('aria-label', 'Part type');
+    var kindFrag = document.createDocumentFragment();
+    for (var k = 0; k < CATALOG.length; k++) {
+      var o = document.createElement('option');
+      o.value = CATALOG[k].key;
+      o.textContent = CATALOG[k].label;
+      kindFrag.appendChild(o);
+    }
+    kindSel.appendChild(kindFrag);
+    kindSel.value = it.key;
+    kindSel.addEventListener('change', function () {
+      axItems[idx] = makeItem(this.value);
+      renderAxItems();
+      calcAxle();
+    });
+
+    var del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'del-btn';
+    del.textContent = '✕';
+    del.setAttribute('aria-label', 'Remove part');
+    del.disabled = axItems.length <= 1;
+    del.addEventListener('click', function () {
+      if (axItems.length <= 1) return;
+      axItems.splice(idx, 1);
+      renderAxItems();
+      calcAxle();
+    });
+
+    head.appendChild(sw);
+    head.appendChild(kindSel);
+    head.appendChild(del);
+    card.appendChild(head);
+
+    var note = document.createElement('div');
+    note.className = 'item-cg';
+
+    var grid = document.createElement('div');
+    grid.className = 'item-grid' + (cat.fixedFront ? ' no-front' : '');
+
+    function addField(labelText, vals, value, suffix, onPick) {
+      var wrap = document.createElement('div');
+      var lab = document.createElement('label');
+      lab.textContent = labelText;
+      var sel = document.createElement('select');
+      sel.className = 'numeric';
+      fillSelect(sel, vals, value, suffix);
+      var selId = 'f' + idx + '-' + labelText.replace(/\W+/g, '');
+      sel.id = selId;
+      lab.setAttribute('for', selId);
+      sel.addEventListener('change', function () {
+        onPick(parseFloat(this.value));
+        note.textContent = cgNoteText(axItems[idx], catOf(axItems[idx].key));
+        calcAxle();
+      });
+      wrap.appendChild(lab);
+      wrap.appendChild(sel);
+      grid.appendChild(wrap);
+    }
+
+    addField('WT LB', WEIGHTS, it.w, '', function (v) { axItems[idx].w = v; });
+    if (!cat.fixedFront) {
+      addField('Front At', POSITIONS, it.x, '"', function (v) { axItems[idx].x = v; });
+    }
+    addField(cat.fixedFront ? 'Overall Len' : 'Length', LENGTHS, it.len, '"', function (v) { axItems[idx].len = v; });
+
+    card.appendChild(grid);
+    note.textContent = cgNoteText(it, cat);
+    card.appendChild(note);
+    return card;
+  }
+
+  function renderAxItems() {
+    var host = $('ax-items');
+    host.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < axItems.length; i++) frag.appendChild(buildCard(i));
+    host.appendChild(frag);
+  }
+
+  /* ===== diagram ===== */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function drawDiagram(La, cg, span, bracketAt) {
+    var RAIL_Y = GEO.RAIL_Y;
+    var svg = $('dg');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var s = span > 0 ? GEO.XW / span : 1;
+    var px = function (inches) { return GEO.X0 + inches * s; };
+
+    var frame = null;
+    for (var i = 0; i < axItems.length; i++) if (axItems[i].key === 'trailer') frame = axItems[i];
+    var deckLen = frame ? lenOf(frame) : catOf('trailer').len;
+    var deckStart = deckLen * GEO.TONGUE_FRACTION;
+    var deckRun = deckLen - deckStart;
+
+    // HUD grid ticks
+    for (var t = 0; t <= span; t += GEO.TICK_IN) {
+      svg.appendChild(el('line', { x1:px(t), y1:RAIL_Y+30, x2:px(t), y2:RAIL_Y+36,
+        stroke:'rgba(111,255,90,0.35)', 'stroke-width':1 }));
+    }
+    svg.appendChild(el('line', { x1:6, y1:RAIL_Y+36, x2:694, y2:RAIL_Y+36, stroke:'rgba(111,255,90,0.3)', 'stroke-width':1 }));
+
+    // main frame rail (thermal cool = structure)
+    svg.appendChild(el('rect', { x:px(0), y:RAIL_Y-5, width:Math.max(6, deckLen*s), height:9,
+      fill:'rgba(95,232,255,0.16)', stroke:COLOR.ICE, 'stroke-width':2 }));
+    // deck rails
+    svg.appendChild(el('rect', { x:px(deckStart), y:RAIL_Y-13, width:Math.max(6, deckRun*s), height:9,
+      fill:'rgba(95,232,255,0.10)', stroke:COLOR.ICE, 'stroke-width':2 }));
+
+    // coupler — hot signature
+    svg.appendChild(el('circle', { cx:px(0), cy:RAIL_Y-1, r:8, fill:'rgba(255,42,31,0.35)', stroke:COLOR.BAD, 'stroke-width':2 }));
+    svg.appendChild(el('circle', { cx:px(0), cy:RAIL_Y-1, r:3, fill:COLOR.BAD }));
+    var t0 = el('text', { x:px(0), y:RAIL_Y+28, fill:COLOR.MURK, 'font-size':11, 'text-anchor':'middle', 'font-family':'monospace' });
+    t0.textContent = '0"';
+    svg.appendChild(t0);
+
+    // wheel + fender
+    var wr = GEO.WHEEL_R;
+    svg.appendChild(el('circle', { cx:px(La), cy:RAIL_Y+wr+4, r:wr, fill:'rgba(255,225,77,0.10)', stroke:COLOR.WARN, 'stroke-width':2 }));
+    svg.appendChild(el('circle', { cx:px(La), cy:RAIL_Y+wr+4, r:6, fill:COLOR.WARN }));
+    svg.appendChild(el('path', { d:'M '+(px(La)-wr-6)+' '+(RAIL_Y+2)+' Q '+px(La)+' '+(RAIL_Y-16)+' '+(px(La)+wr+6)+' '+(RAIL_Y+2),
+      fill:'none', stroke:COLOR.WARN, 'stroke-width':2, opacity:0.75 }));
+    // targeting bracket on axle
+    var bs = wr + 13;
+    svg.appendChild(el('path', { d:'M '+(px(La)-bs)+' '+(RAIL_Y+wr-8)+' v -9 h 9 M '+(px(La)+bs)+' '+(RAIL_Y+wr-8)+' v -9 h -9 M '+(px(La)-bs)+' '+(RAIL_Y+wr+18)+' v 9 h 9 M '+(px(La)+bs)+' '+(RAIL_Y+wr+18)+' v 9 h -9',
+      fill:'none', stroke:COLOR.WARN, 'stroke-width':2 }));
+    var at = el('text', { x:px(La), y:RAIL_Y+wr+58, fill:COLOR.WARN, 'font-size':12, 'text-anchor':'middle', 'font-family':'monospace' });
+    at.textContent = fmt(La, 1) + '"';
+    svg.appendChild(at);
+
+    // Torsion bracket, plus the arm reach out to the wheel centre.
+    if (bracketAt !== null && isFinite(bracketAt)) {
+      svg.appendChild(el('line', { x1:px(bracketAt), y1:RAIL_Y-10, x2:px(bracketAt), y2:RAIL_Y+16,
+        stroke:COLOR.ICE, 'stroke-width':2, opacity:0.9 }));
+      svg.appendChild(el('line', { x1:px(bracketAt), y1:RAIL_Y+12, x2:px(La), y2:RAIL_Y+wr+4,
+        stroke:COLOR.ICE, 'stroke-width':2, 'stroke-dasharray':'3 3', opacity:0.85 }));
+      var bt = el('text', { x:px(bracketAt), y:RAIL_Y-16, fill:COLOR.ICE, 'font-size':10, 'text-anchor':'middle', 'font-family':'monospace' });
+      bt.textContent = 'BKT ' + fmt(bracketAt, 0) + '"';
+      svg.appendChild(bt);
+    }
+
+    // items
+    var DECK_TOP = RAIL_Y - 13;
+    var RACK_TOP = GEO.RACK_TOP;
+    for (var j = 0; j < axItems.length; j++) {
+      var it = axItems[j], c = catOf(it.key);
+      if (c.key === 'trailer') continue;
+      var L = lenOf(it);
+      var left = px(it.x), w = Math.max(7, L * s);
+      var h = Math.max(8, Math.min(54, c.ht * s * 1.4));
+      var g = el('g', {});
+      var fillC = 'rgba(255,255,255,0.06)';
+
+      if (c.level === 'rack') {
+        var topY = RACK_TOP;
+        g.appendChild(el('rect', { x:left, y:topY, width:w, height:7, fill:fillC, stroke:c.color, 'stroke-width':2 }));
+        var armW = Math.max(5, Math.min(9, w * 0.09));
+        var frontArm = left + w * 0.10, rearArm = left + w - w * 0.10 - armW;
+        g.appendChild(el('rect', { x:frontArm, y:topY+7, width:armW, height:DECK_TOP-(topY+7), fill:c.color, opacity:0.55 }));
+        g.appendChild(el('rect', { x:rearArm,  y:topY+7, width:armW, height:DECK_TOP-(topY+7), fill:c.color, opacity:0.55 }));
+        g.appendChild(el('rect', { x:frontArm-4, y:DECK_TOP-4, width:armW+8, height:4, fill:c.color }));
+        g.appendChild(el('rect', { x:rearArm-4,  y:DECK_TOP-4, width:armW+8, height:4, fill:c.color }));
+      } else if (c.level === 'rackTop') {
+        var y = RACK_TOP - h - 2;
+        g.appendChild(el('rect', { x:left, y:y, width:w, height:h, fill:fillC, stroke:c.color, 'stroke-width':2 }));
+        for (var rib = 1; rib < 5; rib++) {
+          if (w > 34) g.appendChild(el('line', { x1:left+w*rib/5, y1:y+3, x2:left+w*rib/5, y2:y+h-3, stroke:c.color, 'stroke-width':1, opacity:0.5 }));
+        }
+        if (w >= 18) {
+          var tt1 = el('text', { x:left+w/2, y:y+h/2+4, fill:c.color, 'font-size':11, 'text-anchor':'middle', 'font-family':'monospace' });
+          tt1.textContent = c.tag;
+          g.appendChild(tt1);
+        }
+      } else if (c.shape === 'boat') {
+        var by = DECK_TOP - 4;
+        var pts = [
+          left + ',' + (by - h*0.55),
+          (left + w*0.14) + ',' + (by - h),
+          (left + w*0.80) + ',' + (by - h),
+          (left + w) + ',' + (by - h*0.62),
+          (left + w*0.86) + ',' + by,
+          (left + w*0.10) + ',' + by
+        ].join(' ');
+        g.appendChild(el('polygon', { points:pts, fill:'rgba(111,255,90,0.10)', stroke:c.color, 'stroke-width':2 }));
+        g.appendChild(el('rect', { x:left+w*0.40, y:by-h*0.80, width:w*0.24, height:h*0.42, fill:c.color, opacity:0.8 }));
+      } else if (c.shape === 'wheel') {
+        var r = Math.min(h, w) / 2;
+        g.appendChild(el('circle', { cx:left+w/2, cy:DECK_TOP-r, r:r, fill:fillC, stroke:c.color, 'stroke-width':2 }));
+        g.appendChild(el('circle', { cx:left+w/2, cy:DECK_TOP-r, r:r/2.6, fill:c.color, opacity:0.8 }));
+      } else if (c.shape === 'jack') {
+        g.appendChild(el('rect', { x:left, y:RAIL_Y-4, width:Math.max(6, w), height:h+10, fill:fillC, stroke:c.color, 'stroke-width':2 }));
+        g.appendChild(el('rect', { x:left-3, y:RAIL_Y+h+4, width:Math.max(12, w+6), height:5, fill:c.color }));
+      } else if (c.shape === 'tank') {
+        var ty = DECK_TOP - h;
+        g.appendChild(el('rect', { x:left, y:ty, width:w, height:h, fill:fillC, stroke:c.color, 'stroke-width':2 }));
+        g.appendChild(el('rect', { x:left+3, y:ty+h*0.42, width:w-6, height:h*0.52, fill:c.color, opacity:0.55 }));
+      } else {
+        var baseY = (c.level === 'tongue') ? RAIL_Y - 5 : DECK_TOP;
+        var y2 = baseY - h;
+        g.appendChild(el('rect', { x:left, y:y2, width:w, height:h, fill:fillC, stroke:c.color, 'stroke-width':2 }));
+        if (h > 13 && w > 15) g.appendChild(el('line', { x1:left+4, y1:y2+5, x2:left+w-4, y2:y2+5, stroke:c.color, 'stroke-width':1, opacity:0.6 }));
+        if (w >= 16 && h >= 13) {
+          var tt = el('text', { x:left+w/2, y:y2+h/2+4, fill:c.color, 'font-size':11, 'text-anchor':'middle', 'font-family':'monospace' });
+          tt.textContent = c.tag;
+          g.appendChild(tt);
+        }
+      }
+      svg.appendChild(g);
+    }
+
+    // --- MASS CENTER: triple-dot laser sight + reticle ---
+    var cgx = px(cg);
+    var cgg = el('g', {});
+    cgg.appendChild(el('line', { x1:cgx, y1:44, x2:cgx, y2:RAIL_Y+30, stroke:COLOR.GOOD, 'stroke-width':1, 'stroke-dasharray':'5 6', opacity:0.8 }));
+    cgg.appendChild(el('circle', { cx:cgx, cy:RAIL_Y-30, r:15, fill:'none', stroke:COLOR.GOOD, 'stroke-width':2 }));
+    cgg.appendChild(el('circle', { cx:cgx, cy:RAIL_Y-30, r:3, fill:COLOR.GOOD }));
+    cgg.appendChild(el('path', { d:'M '+(cgx-24)+' '+(RAIL_Y-30)+' h 6 M '+(cgx+18)+' '+(RAIL_Y-30)+' h 6 M '+cgx+' '+(RAIL_Y-54)+' v 6 M '+cgx+' '+(RAIL_Y-12)+' v 6',
+      fill:'none', stroke:COLOR.GOOD, 'stroke-width':2 }));
+    cgg.appendChild(el('circle', { cx:cgx-9, cy:32, r:3, fill:COLOR.BAD }));
+    cgg.appendChild(el('circle', { cx:cgx+9, cy:32, r:3, fill:COLOR.BAD }));
+    cgg.appendChild(el('circle', { cx:cgx,   cy:46, r:3, fill:COLOR.BAD }));
+    var ct = el('text', { x:cgx, y:20, fill:COLOR.GOOD, 'font-size':12, 'text-anchor':'middle', 'font-family':'monospace' });
+    ct.textContent = 'CG ' + fmt(cg, 0) + '"';
+    cgg.appendChild(ct);
+    svg.appendChild(cgg);
+  }
+
+  /* ===== axle position =====
+     Either measured straight to the wheel centre, or derived from the torsion
+     bracket by swinging the arm out. The contact patch carries the load, so the
+     wheel centre is what the statics use either way. */
+  function resolveAxle() {
+    var mode = $('ax-mode').value;
+    if (mode !== 'bracket') {
+      return { mode: 'direct', wheel: parseFloat($('ax-pos').value), bracket: null, reach: 0 };
+    }
+    var bracket = parseFloat($('ax-bracket').value);
+    var armLen = parseFloat($('ax-arm').value);
+    var startDeg = parseFloat($('ax-start').value);
+    var loaded = $('ax-loadstate').value === 'loaded';
+    var reach = wheelReach(armLen, startDeg, loaded);
+    if ($('ax-orient').value === 'leading') reach = -reach;
+    return { mode: 'bracket', wheel: bracket + reach, bracket: bracket, reach: reach };
+  }
+
+  function syncAxleMode() {
+    var bracketMode = $('ax-mode').value === 'bracket';
+    $('ax-direct-wrap').hidden = bracketMode;
+    $('ax-bracket-wrap').hidden = !bracketMode;
+    if (bracketMode) {
+      var g = resolveAxle();
+      var dir = g.reach >= 0 ? 'AFT OF' : 'FWD OF';
+      $('ax-wheelcalc').textContent = '\u25B8 ARM REACHES ' + fmtFixed(Math.abs(g.reach), 2)
+        + '" ' + dir + ' THE BRACKET  \u2022  WHEEL CENTER ' + fmtFixed(g.wheel, 2) + '"';
+    }
+  }
+
+  /* ===== calc =====
+     Rigid trailer on two supports: the coupler at 0 and the axle group at La.
+     The axle assembly (weight Wa) rides AT the axle, so it is carried entirely
+     by its own support and adds nothing to tongue weight -- but it still counts
+     in gross, which dilutes the percentage.
+
+       Ws, Ms   static load total weight and moment about the coupler
+       TW       = Ws - Ms/La          (axle mass cancels out exactly)
+       W_total  = Ws + Wa
+       cg_total = (Ms + Wa*La) / W_total
+
+     Solving TW / W_total = p for the axle position:
+       La = Ms / (Ws - p*(Ws + Wa))
+     With Wa = 0 this collapses to the familiar cg/(1-p). */
+  function calcAxle() {
+    var Ws = 0, Ms = 0, maxX = 0;
+    for (var i = 0; i < axItems.length; i++) {
+      var it = axItems[i];
+      Ws += it.w;
+      Ms += it.w * cgOf(it);
+      var far = it.x + lenOf(it);
+      if (far > maxX) maxX = far;
+    }
+
+    var geom = resolveAxle();
+    var La = geom.wheel;
+    var p = parseFloat($('ax-target').value);
+    var nAxles = parseInt($('ax-config').value, 10) || 1;
+    var Wa = parseFloat($('ax-axlewt').value) || 0;
+
+    var Wtot = Ws + Wa;
+    var cgStatic = Ws > 0 ? Ms / Ws : NaN;   // load only; sets the sign of TW
+    var valid = Ws > 0 && isFinite(La) && La > 0;
+    var TW = valid ? Ws - Ms / La : NaN;
+    var pct = (valid && Wtot > 0) ? 100 * TW / Wtot : NaN;
+    var cgTot = valid ? (Ms + Wa * La) / Wtot : cgStatic;
+    var recDenom = Ws - p * Wtot;
+    var recPos = (Ws > 0 && recDenom > 0) ? Ms / recDenom : NaN;
+    var move = recPos - La;
+    var axleLoad = isFinite(TW) ? Wtot - TW : NaN;
+
+    var twEl = $('ax-tw'), pctEl = $('ax-twpct'), alertEl = $('ax-alert');
+    var color = COLOR.GOOD;
+    var verdict = '';
+
+    if (!valid) {
+      twEl.textContent = DASH;
+      twEl.style.color = COLOR.GOOD;
+      pctEl.textContent = '';
+      $('ax-meterlabel').textContent = 'Tongue Load Signature';
+    } else {
+      if (pct >= TONGUE.MIN_PCT && pct <= TONGUE.MAX_PCT) color = COLOR.GOOD;
+      else if (pct >= TONGUE.CAUTION_LOW && pct <= TONGUE.CAUTION_HIGH) color = COLOR.WARN;
+      else color = COLOR.BAD;
+
+      if (TW <= 0) {
+        // Axle at or ahead of the LOAD mass centre: the trailer tips rearward
+        // and tries to lift the coupler off the ball. Inverted, not light.
+        verdict = '\u25B2 NEGATIVE \u2014 LOAD IS BEHIND THE AXLE, HITCH WILL LIFT';
+        color = COLOR.BAD;
+      } else if (pct < TONGUE.MIN_PCT) {
+        verdict = '\u25B2 TOO LIGHT \u2014 SWAY RISK';
+      } else if (pct > TONGUE.MAX_PCT) {
+        verdict = '\u25B2 HEAVY \u2014 UNLOADS TOW FRONT AXLE';
+      } else {
+        verdict = '\u25CF LOCKED IN RANGE';
+      }
+
+      twEl.textContent = lbs(TW);
+      twEl.style.color = color;
+      pctEl.innerHTML = fmt(pct, 1) + '% OF GROSS<br>' + verdict;
+      pctEl.style.color = color;
+      $('ax-meterlabel').textContent = 'Tongue Load Signature  [' + fmt(pct, 1) + '%]';
+    }
+
+    // Standing warnings the headline number alone would not surface.
+    var warnings = [];
+    if (Ws <= 0) {
+      warnings.push('NO MASS ON THE MANIFEST.');
+    }
+    if (Ws > 0 && (!isFinite(La) || La <= 0)) {
+      warnings.push('NO AXLE POSITION SET. TONGUE WEIGHT NEEDS AN AXLE AFT OF THE COUPLER.');
+    }
+    if (valid && La <= cgStatic) {
+      warnings.push('AXLE IS AT OR AHEAD OF THE LOAD MASS CENTER (' + fmt(cgStatic, 1) + '"). MOVE IT AFT OF THAT LINE BEFORE ANYTHING ELSE.');
+    }
+    if (Ws > 0 && !isFinite(recPos)) {
+      warnings.push('NO AXLE POSITION REACHES ' + fmt(p * 100, 0) + '% WITH A ' + lbs(Wa) + ' AXLE UNDER ' + lbs(Ws) + ' OF LOAD. THE AXLE ADDS TO GROSS WITHOUT ADDING TONGUE WEIGHT \u2014 LIGHTEN THE AXLE OR ACCEPT A LOWER TARGET.');
+    }
+    if (isFinite(recPos) && recPos > maxX) {
+      warnings.push('TARGET POSITION ' + fmt(recPos, 1) + '" FALLS BEHIND THE LAST PART AT ' + fmt(maxX, 1) + '". SHIFT LOAD FORWARD INSTEAD OF CHASING IT WITH THE AXLE.');
+    }
+    alertEl.innerHTML = warnings.join('<br><br>');
+    alertEl.hidden = warnings.length === 0;
+
+    // thermal meter: cool -> hot across the sweep, target band pre-lit
+    var segs = $('ax-meter').children;
+    var filled = isFinite(pct) ? Math.round((pct / TONGUE.METER_MAX_PCT) * METER_SEGS) : 0;
+    if (filled > METER_SEGS) filled = METER_SEGS;
+    if (filled < 0) filled = 0;
+    for (var q = 0; q < segs.length; q++) {
+      var frac = (q + 0.5) / METER_SEGS * TONGUE.METER_MAX_PCT;
+      if (q < filled) {
+        segs[q].style.background = color;
+        segs[q].style.boxShadow = '0 0 8px ' + color;
+      } else {
+        segs[q].style.boxShadow = 'none';
+        segs[q].style.background = (frac >= TONGUE.MIN_PCT && frac <= TONGUE.MAX_PCT) ? COLOR.SEG_BAND : COLOR.SEG_OFF;
+      }
+    }
+
+    $('ax-rec').textContent = isFinite(recPos) ? fmt(recPos, 1) + '"' : DASH;
+    $('ax-recnote').textContent = 'FOR ' + fmt(p * 100, 0) + '% TONGUE WEIGHT'
+      + (geom.mode === 'bracket' && isFinite(recPos)
+          ? '  \u2022  BRACKET AT ' + fmt(recPos - geom.reach, 1) + '"'
+          : '');
+    $('ax-move').textContent = isFinite(move)
+      ? (Math.abs(move) < 0.05 ? '\u25CF ON TARGET' : fmt(Math.abs(move), 1) + '" ' + (move > 0 ? 'AFT' : 'FWD'))
+      : DASH;
+    $('ax-gross').textContent = lbs(Wtot);
+    $('ax-cg').textContent = isFinite(cgTot) ? fmt(cgTot, 1) + '"' : DASH;
+    $('ax-cgnote').textContent = Wa > 0 && isFinite(cgStatic)
+      ? 'LOAD ALONE ' + fmt(cgStatic, 1) + '"  \u2022  AXLE ' + lbs(Wa) + ' RIDES AT ' + fmt(La, 1) + '"'
+      : '';
+    $('ax-axleload').textContent = lbs(axleLoad);
+    $('ax-pernote').textContent = nAxles > 1
+      ? (isFinite(axleLoad) ? Math.round(axleLoad / nAxles).toLocaleString() + ' LB PER AXLE (NOMINAL \u2014 TORSION DOES NOT EQUALIZE)' : DASH)
+      : 'SINGLE AXLE';
+
+    var span = Math.max(maxX, isFinite(La) ? La : 0, isFinite(recPos) ? recPos : 0) * GEO.SPAN_MARGIN;
+    drawDiagram(isFinite(La) ? La : 0, isFinite(cgTot) ? cgTot : 0, span,
+      geom.mode === 'bracket' ? geom.bracket : null);
+  }
+
+  /* ===== init ===== */
+  fillSelect($('ax-pos'), POSITIONS, nearestIn(POSITIONS, 110), '"');
+  fillSelect($('ax-axlewt'), AXLE_WTS, 0, '');
+  fillSelect($('ax-bracket'), POSITIONS, nearestIn(POSITIONS, 104), '"');
+  fillSelect($('ax-arm'), ARM_LENS, nearestIn(ARM_LENS, 6), '"', 2);
+  (function () {
+    var sel = $('ax-start'), frag = document.createDocumentFragment();
+    TORSION.START_ANGLES.forEach(function (deg) {
+      var o = document.createElement('option');
+      o.value = String(deg);
+      o.textContent = startAngleLabel(deg);
+      frag.appendChild(o);
+    });
+    sel.appendChild(frag);
+    sel.value = '22.5';
+  })();
+
+  function onAxleInput() { syncAxleMode(); calcAxle(); }
+  ['ax-pos', 'ax-axlewt', 'ax-mode', 'ax-bracket', 'ax-arm', 'ax-start', 'ax-orient', 'ax-loadstate']
+    .forEach(function (id) { $(id).addEventListener('change', onAxleInput); });
+  $('ax-target').addEventListener('change', calcAxle);
+  $('ax-config').addEventListener('change', calcAxle);
+
+  renderAxItems();
+  syncAxleMode();
+  calcAxle();
+})();
+</script>
+</body>
+</html>
