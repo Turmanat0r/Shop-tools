@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#060a07">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<title>Turmanator :: Cut Nest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #060a07;
+    --hull: #0c130e;
+    --hull-2: #101a12;
+    --phos: #3dff88;
+    --phos-dim: #1c6b3c;
+    --phos-ghost: #0f2e1c;
+    --amber: #ffb000;
+    --amber-dim: #6b4a00;
+    --alert: #ff3b30;
+    --ice: #5fd7ff;
+    --bone: #cfe0d4;
+    --murk: #5d7a68;
+    --line: #1e3a28;
+    --mono: 'VT323', 'SFMono-Regular', ui-monospace, 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--void);
+    color: var(--phos);
+    font-family: var(--mono);
+    font-size: 17px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* CRT scanlines + vignette */
+  body::before {
+    content:''; position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    background: repeating-linear-gradient(to bottom,
+      rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px,
+      transparent 1px, transparent 3px);
+  }
+  body::after {
+    content:''; position: fixed; inset: 0; pointer-events: none; z-index: 199;
+    background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(0,0,0,0.55) 100%);
+  }
+  @media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
+  .wrap {
+    max-width: 720px; margin: 0 auto; position: relative;
+    padding: 0 calc(14px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+  }
+
+  .hazard-bar {
+    height: 14px; width: 100%;
+    background: repeating-linear-gradient(-45deg,
+      var(--amber), var(--amber) 12px,
+      #0a0d08 12px, #0a0d08 24px);
+    border-bottom: 1px solid var(--amber-dim);
+  }
+
+  .backlink {
+    display: inline-block; margin: 16px 0 0; padding: 7px 11px;
+    border: 1px solid var(--phos-dim); color: var(--phos);
+    text-decoration: none; font-size: 15px; letter-spacing: 0.14em;
+  }
+
+  .header {
+    border: 1px solid var(--phos-dim);
+    background: linear-gradient(180deg, rgba(61,255,136,0.07), rgba(6,10,7,0.9));
+    padding: 16px; margin: 14px 0 18px; position: relative;
+  }
+  .header::before, .header::after {
+    content:''; position:absolute; width: 14px; height: 14px;
+    border-color: var(--amber); border-style: solid;
+  }
+  .header::before { top:-1px; left:-1px; border-width: 2px 0 0 2px; }
+  .header::after  { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
+  .wy {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 15px; letter-spacing: 0.22em; color: var(--amber);
+    border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 10px;
+  }
+  .wy .sub { color: var(--murk); letter-spacing: 0.12em; font-size: 14px; }
+  h1 {
+    font-size: 40px; margin: 0; letter-spacing: 0.10em; line-height: 1;
+    color: var(--phos); text-shadow: 0 0 14px rgba(61,255,136,0.55);
+  }
+  .subtitle { font-size: 16px; color: var(--murk); margin: 10px 0 0; letter-spacing: 0.06em; }
+  .blink { animation: bl 1.1s steps(1) infinite; color: var(--amber); }
+  @keyframes bl { 0%,55%{opacity:1} 56%,100%{opacity:0.12} }
+
+  .panel {
+    background: linear-gradient(180deg, var(--hull-2), var(--hull));
+    border: 1px solid var(--line);
+    padding: 15px; margin-bottom: 16px; position: relative;
+    box-shadow: inset 0 0 30px rgba(61,255,136,0.035);
+  }
+  .panel-title {
+    font-size: 17px; color: var(--amber);
+    letter-spacing: 0.24em; text-transform: uppercase;
+    margin-bottom: 13px; display: flex; align-items: center; gap: 9px;
+  }
+  .panel-title::before { content:'\25B8'; color: var(--phos); }
+  .panel-title::after {
+    content:''; flex:1; height:1px;
+    background: linear-gradient(90deg, var(--amber-dim), transparent);
+  }
+
+  label {
+    display: block; font-size: 14px; color: var(--murk);
+    margin-bottom: 4px; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .field { margin-bottom: 12px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  select, input[type=text] {
+    width: 100%; background: rgba(6,10,7,0.92);
+    border: 1px solid var(--phos-dim); border-radius: 0;
+    color: var(--phos); padding: 9px 8px; font-size: 18px;
+    font-family: var(--mono); letter-spacing: 0.05em;
+    outline: none; -webkit-appearance: none; appearance: none;
+  }
+  select:focus-visible, input[type=text]:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+  select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M0 0l6 8 6-8z' fill='%23ffb000'/></svg>");
+    background-repeat: no-repeat; background-position: right 8px center; padding-right: 26px;
+  }
+  select.numeric {
+    border-color: var(--amber); background-color: rgba(255,176,0,0.07);
+    color: var(--amber); text-shadow: 0 0 8px rgba(255,176,0,0.5);
+  }
+  select.numeric:focus { border-color: #fff; color: #fff; }
+  select.matsel {
+    border-color: var(--ice); background-color: rgba(95,215,255,0.06); color: var(--ice);
+  }
+
+  .add-btn {
+    width: 100%; padding: 11px; border-radius: 0;
+    border: 1px solid var(--amber); background: rgba(255,176,0,0.08);
+    color: var(--amber); font-size: 17px;
+    cursor: pointer; font-family: var(--mono);
+    text-transform: uppercase; letter-spacing: 0.22em;
+  }
+  .add-btn:active { background: var(--amber); color: var(--void); }
+
+  .cut-card {
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--phos);
+    padding: 11px; margin-bottom: 11px;
+    background: rgba(6,10,7,0.55);
+  }
+  .cut-head { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 9px; }
+  .cut-head > div:first-child { flex: 1; }
+  .mat-row { display: grid; grid-template-columns: 1fr 1.35fr; gap: 8px; margin-bottom: 9px; }
+  .dim-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .cut-foot {
+    font-size: 15px; color: var(--murk); margin-top: 9px;
+    border-top: 1px dashed var(--line); padding-top: 7px; letter-spacing: 0.05em;
+  }
+  .del-btn {
+    padding: 8px 11px; border: 1px solid var(--alert);
+    color: var(--alert); background: rgba(255,59,48,0.08);
+    cursor: pointer; font-size: 17px; line-height: 1;
+    font-family: var(--mono); flex-shrink: 0;
+  }
+  .del-btn:active:not(:disabled) { background: var(--alert); color: #fff; }
+  .del-btn:disabled { opacity: 0.3; cursor: default; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-bottom: 15px; }
+  .stat {
+    background: rgba(6,10,7,0.9); border: 1px solid var(--line);
+    padding: 10px; position: relative;
+  }
+  .stat::before {
+    content:''; position:absolute; top:-1px; left:-1px;
+    width:10px; height:10px; border: solid var(--amber); border-width: 1px 0 0 1px;
+  }
+  .stat-label {
+    font-size: 13px; color: var(--murk); text-transform: uppercase;
+    letter-spacing: 0.14em; margin-bottom: 3px;
+  }
+  .stat-num { font-size: 30px; line-height: 1; text-shadow: 0 0 12px currentColor; }
+  .stat-sub { font-size: 13px; color: var(--murk); margin-top: 4px; letter-spacing: 0.05em; }
+
+  .matgroup { margin-bottom: 20px; }
+  .matgroup-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--amber); padding-bottom: 6px; margin-bottom: 11px; gap: 2px 10px;
+  }
+  .matgroup-name { font-size: 18px; color: var(--bone); letter-spacing: 0.08em; }
+  .matgroup-meta { font-size: 16px; color: var(--amber); white-space: nowrap; margin-left: auto; }
+
+  .stick { margin-bottom: 13px; }
+  .stick-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 15px; margin-bottom: 4px; gap: 10px; letter-spacing: 0.1em;
+  }
+  .stick-no { color: var(--amber); }
+  .stick-drop { color: var(--murk); }
+  .stick-drop.keep { color: var(--phos); }
+  .bar {
+    display: flex; height: 30px; width: 100%;
+    border: 1px solid var(--line); overflow: hidden;
+    background: rgba(6,10,7,0.9);
+  }
+  .seg {
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 15px;
+    color: var(--void); overflow: hidden; white-space: nowrap;
+  }
+  .seg-loss { background: var(--phos-ghost); color: var(--murk); }
+  .seg-drop {
+    background: repeating-linear-gradient(-45deg,
+      #2a1410, #2a1410 5px, #1a0d0a 5px, #1a0d0a 10px);
+    color: var(--alert);
+  }
+  .seg-drop.keep {
+    background: repeating-linear-gradient(-45deg,
+      #0f2e1c, #0f2e1c 5px, #0a1f13 5px, #0a1f13 10px);
+    color: var(--phos);
+  }
+  .stick-seq { font-size: 14px; color: var(--murk); margin-top: 4px; letter-spacing: 0.05em; }
+  .droplist { font-size: 15px; line-height: 1.8; color: var(--murk); margin-top: 8px; letter-spacing: 0.05em; }
+  .droplist .keep { color: var(--phos); }
+  .droplist .scrap { color: var(--murk); }
+
+  .note { color: var(--murk); font-size: 15px; line-height: 1.65; margin-top: 13px; letter-spacing: 0.04em; }
+  .warn {
+    background: rgba(255,59,48,0.12); border: 1px solid var(--alert);
+    color: #ff9d92; padding: 10px; font-size: 16px; line-height: 1.5;
+    margin-bottom: 13px; letter-spacing: 0.05em;
+  }
+  .warn[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="hazard-bar"></div>
+<div class="wrap">
+
+  <a class="backlink" href="../">&larr; FAB CALCULATORS</a>
+
+  <div class="header">
+    <div class="wy">
+      <span>TURMANATOR IRONWORKS</span>
+      <span class="sub">FAB BAY 04</span>
+    </div>
+    <h1>CUT NEST</h1>
+    <p class="subtitle"><span class="blink">&#9608;</span> STOCK ALLOCATION / KERF COMPENSATED / REMNANT LOG</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Stock &amp; Saw</div>
+    <div class="row2">
+      <div class="field">
+        <label for="stock">Stock length</label>
+        <select class="numeric" id="stock"></select>
+      </div>
+      <div class="field">
+        <label for="kerf">Saw kerf</label>
+        <select class="numeric" id="kerf">
+          <option value="0.035">.035" THIN ABRASIVE</option>
+          <option value="0.0625">1/16" BANDSAW</option>
+          <option value="0.09" selected>.090" COLD SAW</option>
+          <option value="0.125">1/8" CHOP SAW</option>
+          <option value="0.1875">3/16" PLASMA</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field" style="margin-bottom:0;">
+        <label for="trim">End trim per stick</label>
+        <select class="numeric" id="trim"></select>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label for="keepmin">Salvage remnants over</label>
+        <select class="numeric" id="keepmin"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Cut Manifest</div>
+    <div id="cuts"></div>
+    <button class="add-btn" id="addcut" type="button" style="margin-top:6px;">+ Add Cut</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Nest Report</div>
+    <div class="warn" id="warnbox" hidden></div>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="stat-label">Sticks</div>
+        <div class="stat-num" id="r-sticks" style="color:var(--amber);">&mdash;</div>
+        <div class="stat-sub" id="r-sticksub"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Yield</div>
+        <div class="stat-num" id="r-yield" style="color:var(--phos);">&mdash;</div>
+        <div class="stat-sub" id="r-yieldsub"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Cut mass</div>
+        <div class="stat-num" id="r-wt" style="color:var(--ice);">&mdash;</div>
+        <div class="stat-sub" id="r-wtsub"></div>
+      </div>
+    </div>
+    <div id="layout"></div>
+    <p class="note">EACH STOCK TYPE NESTS SEPARATELY &mdash; A 2&times;2 TUBE CUT CANNOT COME OFF A LENGTH OF PIPE. THE NESTER RUNS FIRST-FIT AND BEST-FIT PASSES PER STOCK TYPE AND REPORTS WHICHEVER CONSUMES FEWER STICKS; ON A TIE IT FAVORS THE NEST LEAVING ONE LONG REMNANT OVER SEVERAL SHORT ONES.</p>
+    <p class="note">KERF IS CHARGED BETWEEN ADJACENT PIECES <em>AND</em> AGAIN TO FREE THE REMNANT &mdash; N PIECES PLUS A DROP MEANS N CUTS, NOT N&minus;1. A REMNANT SHORTER THAN ONE KERF IS REPORTED AS NOTHING, BECAUSE THE BLADE EATS IT. REMNANTS CLEARING THE SALVAGE THRESHOLD ARE FLAGGED GREEN AND WORTH RACKING.</p>
+    <p class="note">MASS IS A36 AT 0.2836 LB/IN&sup3;. SQUARE AND RECT TUBE USE RADIUSED CORNERS AT 2&times;WALL, WHICH REPRODUCES THE PUBLISHED AISC HSS WEIGHTS &mdash; A SHARP-CORNER AREA RUNS 4-6% <em>HEAVY</em>. PIPE AND ROUND TUBE ARE EXACT. ANGLE IGNORES THE FILLET AND READS ABOUT 0.2% LIGHT.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var DASH = '—';
+  var $ = function (id) { return document.getElementById(id); };
+
+  function fmt(n, decimals) {
+    if (!isFinite(n)) return DASH;
+    var d = (decimals === undefined) ? 3 : decimals;
+    var p = Math.pow(10, d);
+    var r = Math.round(n * p) / p;
+    if (Object.is(r, -0)) r = 0;
+    return r.toString();
+  }
+  function inFt(n) {
+    if (!isFinite(n)) return DASH;
+    var ft = Math.floor(n / 12), inch = n - ft * 12;
+    return ft === 0 ? fmt(inch, 3) + '"' : ft + "' " + fmt(inch, 3) + '"';
+  }
+
+  var DENSITY = 0.2836;          // lb/in^3, steel
+  var CORNER_RADIUS_RATIO = 2;   // HSS outside corner radius, per the AISC tables
+  var PALETTE = ['#3dff88', '#ffb000', '#5fd7ff', '#ff5f4d', '#d4ff3d', '#c88cff', '#00e0b8', '#9fb8a8'];
+  var MIN_LABEL_PCT = 7;         // narrower than this and a segment label will not fit
+
+  /* ===== SECTION AREAS =====
+     A rounded rectangle is the full rectangle minus four "square corner minus
+     quarter disc" slivers; each sliver has area (1 - pi/4)*R^2. With the
+     outside radius at 2x wall this reproduces the published AISC HSS weights.
+     A sharp-corner area runs 4-6% heavy. */
+  var K_A = 1 - Math.PI / 4;
+  function roundedRectArea(b, h, r) {
+    if (b <= 0 || h <= 0) return 0;
+    return b * h - 4 * K_A * r * r;
+  }
+  function tubeArea(b, h, t) {
+    var rOut = Math.min(CORNER_RADIUS_RATIO * t, Math.min(b, h) / 2);
+    var bi = b - 2 * t, hi = h - 2 * t;
+    var rIn = Math.max(rOut - t, 0);
+    if (bi > 0 && hi > 0) rIn = Math.min(rIn, Math.min(bi, hi) / 2);
+    return roundedRectArea(b, h, rOut) - roundedRectArea(bi, hi, rIn);
+  }
+  function roundArea(od, t) { return Math.PI / 4 * (od * od - (od - 2 * t) * (od - 2 * t)); }
+  function flatArea(w, t) { return w * t; }
+  // Legs a and b, thickness t. Ignores the fillet, which reads ~0.2% light.
+  function angleArea(a, b, t) { return (a + b - t) * t; }
+
+  function trimZeros(x, places) { return x.toFixed(places).replace(/0+$/, '').replace(/\.$/, ''); }
+
+  function buildSquare() {
+    var sizes = [
+      [1,    [0.065, 0.083, 0.095, 0.120]],
+      [1.25, [0.065, 0.083, 0.095, 0.120]],
+      [1.5,  [0.065, 0.083, 0.095, 0.120, 0.188]],
+      [1.75, [0.083, 0.095, 0.120, 0.188]],
+      [2,    [0.065, 0.083, 0.095, 0.120, 0.188, 0.250]],
+      [2.5,  [0.095, 0.120, 0.188, 0.250]],
+      [3,    [0.095, 0.120, 0.188, 0.250]],
+      [4,    [0.120, 0.188, 0.250]]
+    ];
+    var out = [];
+    sizes.forEach(function (row) {
+      row[1].forEach(function (t) {
+        out.push({ label: row[0] + ' x ' + row[0] + ' x ' + t.toFixed(3), area: tubeArea(row[0], row[0], t) });
+      });
+    });
+    return out;
+  }
+  function buildRect() {
+    var sizes = [
+      [2, 1, [0.065, 0.083, 0.095, 0.120, 0.188]],
+      [3, 2, [0.095, 0.120, 0.188, 0.250]],
+      [4, 2, [0.120, 0.188, 0.250]],
+      [5, 3, [0.188, 0.250]],
+      [6, 2, [0.188, 0.250]],
+      [6, 3, [0.188, 0.250]]
+    ];
+    var out = [];
+    sizes.forEach(function (row) {
+      row[2].forEach(function (t) {
+        out.push({ label: row[0] + ' x ' + row[1] + ' x ' + t.toFixed(3), area: tubeArea(row[1], row[0], t) });
+      });
+    });
+    return out;
+  }
+  function buildPipe() {
+    // schedule 40: [nominal label, OD, wall]
+    var p = [['1/2"', 0.840, 0.109], ['3/4"', 1.050, 0.113], ['1"', 1.315, 0.133],
+             ['1-1/4"', 1.660, 0.140], ['1-1/2"', 1.900, 0.145], ['2"', 2.375, 0.154],
+             ['2-1/2"', 2.875, 0.203], ['3"', 3.500, 0.216], ['4"', 4.500, 0.237]];
+    return p.map(function (r) {
+      return { label: r[0] + ' sch40  (OD ' + r[1].toFixed(3) + '")', area: roundArea(r[1], r[2]) };
+    });
+  }
+  function buildRoundTube() {
+    var ods = [[0.75, [0.065, 0.095, 0.120]], [1, [0.065, 0.095, 0.120]],
+               [1.25, [0.065, 0.095, 0.120]], [1.5, [0.095, 0.120, 0.188]],
+               [1.75, [0.095, 0.120, 0.188]], [2, [0.095, 0.120, 0.188, 0.250]],
+               [2.5, [0.120, 0.188, 0.250]], [3, [0.120, 0.188, 0.250]]];
+    var out = [];
+    ods.forEach(function (row) {
+      row[1].forEach(function (t) {
+        out.push({ label: row[0] + '" OD x ' + t.toFixed(3), area: roundArea(row[0], t) });
+      });
+    });
+    return out;
+  }
+  function buildFlat() {
+    var widths = [0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6];
+    var thicks = [[0.125, '1/8'], [0.1875, '3/16'], [0.25, '1/4'], [0.375, '3/8'],
+                  [0.5, '1/2'], [0.625, '5/8'], [0.75, '3/4']];
+    var out = [];
+    widths.forEach(function (w) {
+      thicks.forEach(function (th) {
+        out.push({ label: w + '" x ' + th[1] + '"', area: flatArea(w, th[0]) });
+      });
+    });
+    return out;
+  }
+  function buildAngle() {
+    var a = [[1, 1, [0.125, 0.1875, 0.25]], [1.25, 1.25, [0.125, 0.1875, 0.25]],
+             [1.5, 1.5, [0.125, 0.1875, 0.25]], [2, 2, [0.125, 0.1875, 0.25, 0.375]],
+             [2.5, 2.5, [0.1875, 0.25, 0.375]], [3, 3, [0.1875, 0.25, 0.375]],
+             [3, 2, [0.1875, 0.25, 0.375]], [4, 4, [0.25, 0.375, 0.5]]];
+    var out = [];
+    a.forEach(function (row) {
+      row[2].forEach(function (t) {
+        out.push({ label: row[0] + ' x ' + row[1] + ' x ' + trimZeros(t, 4), area: angleArea(row[0], row[1], t) });
+      });
+    });
+    return out;
+  }
+
+  var PROFILES = [
+    { key: 'sqtube',  label: 'Square tube', sizes: buildSquare() },
+    { key: 'rectube', label: 'Rect tube',   sizes: buildRect() },
+    { key: 'pipe',    label: 'Round pipe',  sizes: buildPipe() },
+    { key: 'rdtube',  label: 'Round tube',  sizes: buildRoundTube() },
+    { key: 'flat',    label: 'Flat strap',  sizes: buildFlat() },
+    { key: 'angle',   label: 'Angle iron',  sizes: buildAngle() }
+  ];
+  function profOf(key) {
+    for (var i = 0; i < PROFILES.length; i++) if (PROFILES[i].key === key) return PROFILES[i];
+    return PROFILES[0];
+  }
+  // Never return undefined: a non-numeric or out-of-range index clamps into the
+  // list rather than crashing every caller that reaches for .area.
+  function sizeOf(profKey, idx) {
+    var list = profOf(profKey).sizes;
+    var i = Math.floor(Number(idx));
+    if (!isFinite(i) || i < 0) i = 0;
+    if (i > list.length - 1) i = list.length - 1;
+    return list[i];
+  }
+  // Resolve a size by its printed label so defaults survive edits to the lists.
+  function sizeIndex(profKey, labelStart) {
+    var list = profOf(profKey).sizes;
+    for (var i = 0; i < list.length; i++) if (list[i].label.indexOf(labelStart) === 0) return i;
+    return 0;
+  }
+
+  /* ===== option grids ===== */
+  var STOCKS = [72, 96, 120, 144, 168, 180, 192, 216, 240, 264, 288];
+  var TRIMS = [0, 0.125, 0.25, 0.5, 0.75, 1, 1.5, 2];
+  var KEEPMINS = [0, 4, 6, 8, 12, 18, 24, 36, 48];
+  var WHOLE = []; (function () { for (var i = 0; i <= 288; i++) WHOLE.push(i); })();
+  var FRACS = [0, 1/16, 1/8, 3/16, 1/4, 5/16, 3/8, 7/16, 1/2, 9/16, 5/8, 11/16, 3/4, 13/16, 7/8, 15/16];
+  var FRACLBL = ['0', '1/16', '1/8', '3/16', '1/4', '5/16', '3/8', '7/16', '1/2', '9/16', '5/8', '11/16', '3/4', '13/16', '7/8', '15/16'];
+  var QTYS = []; (function () { for (var q = 1; q <= 120; q++) QTYS.push(q); })();
+
+  function nearestIn(list, value) {
+    var best = list[0], bestDist = Infinity;
+    for (var i = 0; i < list.length; i++) {
+      var d = Math.abs(list[i] - value);
+      if (d < bestDist) { bestDist = d; best = list[i]; }
+    }
+    return best;
+  }
+  // The caller snaps state first, so the shown value always equals the computed one.
+  function fillSelect(sel, vals, chosen, labelFn) {
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < vals.length; i++) {
+      var o = document.createElement('option');
+      o.value = String(vals[i]);
+      o.textContent = labelFn ? labelFn(vals[i]) : String(vals[i]);
+      frag.appendChild(o);
+    }
+    sel.innerHTML = '';
+    sel.appendChild(frag);
+    sel.value = String(chosen);
+  }
+
+  /* ===== state ===== */
+  function makeCut(label, prof, sizeLabel, whole, frac, qty) {
+    return {
+      label: label, prof: prof, size: sizeIndex(prof, sizeLabel),
+      whole: nearestIn(WHOLE, whole), frac: nearestIn(FRACS, frac), qty: nearestIn(QTYS, qty)
+    };
+  }
+  var cuts = [
+    makeCut('MAIN RAIL', 'sqtube',  '2 x 2 x 0.120', 96, 0,   4),
+    makeCut('CROSSMBR',  'sqtube',  '2 x 2 x 0.120', 48, 0,   8),
+    makeCut('TONGUE',    'rectube', '3 x 2 x 0.188', 72, 0,   2),
+    makeCut('GUSSET',    'flat',    '3" x 1/4"',      6, 0.5, 12)
+  ];
+
+  function cutLen(c) { return c.whole + c.frac; }
+  function matKey(c) { return c.prof + '|' + c.size; }
+  function matName(c) { return profOf(c.prof).label + '  ' + sizeOf(c.prof, c.size).label; }
+  function lbPerIn(c) { return sizeOf(c.prof, c.size).area * DENSITY; }
+
+  function footText(c) {
+    var L = cutLen(c);
+    return '▸ ' + c.qty + ' × ' + fmt(L, 3) + '"  (' + inFt(L) + ')   •   ' +
+      fmt(L * c.qty, 2) + '" total   •   ' + fmt(L * lbPerIn(c) * c.qty, 1) + ' lb';
+  }
+
+  function buildCard(idx) {
+    var c = cuts[idx];
+    var color = PALETTE[idx % PALETTE.length];
+    var card = document.createElement('div');
+    card.className = 'cut-card';
+    card.style.borderLeftColor = color;
+
+    var foot = document.createElement('div');
+    foot.className = 'cut-foot';
+
+    var head = document.createElement('div');
+    head.className = 'cut-head';
+    var f0 = document.createElement('div');
+    var l0 = document.createElement('label');
+    l0.textContent = 'Part name';
+    l0.setAttribute('for', 'name' + idx);
+    var i0 = document.createElement('input');
+    i0.type = 'text'; i0.id = 'name' + idx; i0.value = c.label; i0.style.color = color;
+    i0.addEventListener('input', function () { cuts[idx].label = this.value; run(); });
+    f0.appendChild(l0); f0.appendChild(i0);
+
+    var del = document.createElement('button');
+    del.type = 'button'; del.className = 'del-btn'; del.textContent = '✕';
+    del.setAttribute('aria-label', 'Remove cut');
+    del.disabled = cuts.length <= 1;
+    del.addEventListener('click', function () {
+      if (cuts.length <= 1) return;
+      cuts.splice(idx, 1); renderCuts(); run();
+    });
+    head.appendChild(f0); head.appendChild(del);
+    card.appendChild(head);
+
+    var mrow = document.createElement('div');
+    mrow.className = 'mat-row';
+
+    var fp = document.createElement('div');
+    var lp = document.createElement('label');
+    lp.textContent = 'Material'; lp.setAttribute('for', 'prof' + idx);
+    var sp = document.createElement('select');
+    sp.className = 'matsel'; sp.id = 'prof' + idx;
+    PROFILES.forEach(function (p) {
+      var o = document.createElement('option');
+      o.value = p.key; o.textContent = p.label;
+      sp.appendChild(o);
+    });
+    sp.value = c.prof;
+    sp.addEventListener('change', function () {
+      if (!profOf(this.value) || this.value === '') return;
+      cuts[idx].prof = this.value;
+      cuts[idx].size = 0;
+      renderCuts(); run();
+    });
+    fp.appendChild(lp); fp.appendChild(sp);
+
+    var fs = document.createElement('div');
+    var ls = document.createElement('label');
+    ls.textContent = 'Size'; ls.setAttribute('for', 'size' + idx);
+    var ss = document.createElement('select');
+    ss.className = 'matsel'; ss.id = 'size' + idx;
+    profOf(c.prof).sizes.forEach(function (sz, m) {
+      var o = document.createElement('option');
+      o.value = String(m);
+      o.textContent = sz.label + '   [' + fmt(sz.area * DENSITY * 12, 2) + ' lb/ft]';
+      ss.appendChild(o);
+    });
+    ss.value = String(Math.min(c.size, profOf(c.prof).sizes.length - 1));
+    ss.addEventListener('change', function () {
+      var v = parseInt(this.value, 10);
+      if (!isFinite(v)) return;
+      cuts[idx].size = v;
+      foot.textContent = footText(cuts[idx]);
+      run();
+    });
+    fs.appendChild(ls); fs.appendChild(ss);
+    mrow.appendChild(fp); mrow.appendChild(fs);
+    card.appendChild(mrow);
+
+    var drow = document.createElement('div');
+    drow.className = 'dim-row';
+
+    function addNum(labelText, id, vals, value, labelFn, onPick) {
+      var wrap = document.createElement('div');
+      var lab = document.createElement('label');
+      lab.textContent = labelText; lab.setAttribute('for', id);
+      var sel = document.createElement('select');
+      sel.className = 'numeric'; sel.id = id;
+      fillSelect(sel, vals, value, labelFn);
+      sel.addEventListener('change', function () {
+        var v = parseFloat(this.value);
+        if (!isFinite(v)) return;
+        onPick(v);
+        foot.textContent = footText(cuts[idx]);
+        run();
+      });
+      wrap.appendChild(lab); wrap.appendChild(sel);
+      drow.appendChild(wrap);
+    }
+    addNum('Inches', 'whole' + idx, WHOLE, c.whole, null, function (v) { cuts[idx].whole = v; });
+    addNum('Frac', 'frac' + idx, FRACS, c.frac,
+      function (v) { return FRACLBL[FRACS.indexOf(v)]; },
+      function (v) { cuts[idx].frac = v; });
+    addNum('Qty', 'qty' + idx, QTYS, c.qty, null, function (v) { cuts[idx].qty = v; });
+
+    card.appendChild(drow);
+    foot.textContent = footText(c);
+    card.appendChild(foot);
+    return card;
+  }
+
+  function renderCuts() {
+    var host = $('cuts');
+    host.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < cuts.length; i++) frag.appendChild(buildCard(i));
+    host.appendChild(frag);
+  }
+
+  $('addcut').addEventListener('click', function () {
+    cuts.push(makeCut('PART ' + (cuts.length + 1), 'sqtube', '2 x 2 x 0.120', 24, 0, 2));
+    renderCuts(); run();
+  });
+
+  /* ===== packing =====
+     Pieces are placed longest-first. Within a stick, kerf is charged between
+     adjacent pieces only: n pieces separated by n-1 cuts. That is the correct
+     FIT test -- if the last piece ends exactly at the end of the usable length
+     there is no drop and no final cut. Freeing an actual drop costs one more
+     kerf, which is taken off the remnant in usableDrop() rather than here. */
+  function pack(pieces, usable, kerf, strategy) {
+    var bins = [];
+    for (var i = 0; i < pieces.length; i++) {
+      var L = pieces[i].len, cand = null, need, b;
+      if (strategy === 'ffd') {
+        for (b = 0; b < bins.length; b++) {
+          need = bins[b].items.length ? L + kerf : L;
+          if (bins[b].rem >= need - 1e-9) { cand = bins[b]; break; }
+        }
+      } else {
+        var bestLeft = Infinity;
+        for (b = 0; b < bins.length; b++) {
+          need = bins[b].items.length ? L + kerf : L;
+          if (bins[b].rem >= need - 1e-9) {
+            var left = bins[b].rem - need;
+            if (left < bestLeft) { bestLeft = left; cand = bins[b]; }
+          }
+        }
+      }
+      if (!cand) { cand = { rem: usable, items: [] }; bins.push(cand); need = L; }
+      else { need = cand.items.length ? L + kerf : L; }
+      cand.rem -= need;
+      cand.items.push(pieces[i]);
+    }
+    return bins;
+  }
+  // Account for one stick. n pieces separated by n-1 cuts; if anything is left
+  // over, one more cut frees it -- but that cut can only consume what is
+  // actually there, so a remainder shorter than a kerf is simply eaten and
+  // leaves nothing. Returns parts that always sum back to the stick.
+  function stickAccount(bin, kerf) {
+    var n = bin.items.length;
+    var rem = bin.rem > 1e-9 ? bin.rem : 0;
+    var finalKerf = rem > 0 ? Math.min(kerf, rem) : 0;
+    return {
+      pieces: n,
+      cuts: n - (rem > 0 ? 0 : 1) < 0 ? 0 : (rem > 0 ? n : Math.max(0, n - 1)),
+      kerfLoss: Math.max(0, n - 1) * kerf + finalKerf,
+      drop: rem - finalKerf
+    };
+  }
+  function longestDrop(bins, kerf) {
+    var m = 0;
+    for (var i = 0; i < bins.length; i++) {
+      var d = stickAccount(bins[i], kerf).drop;
+      if (d > m) m = d;
+    }
+    return m;
+  }
+
+  /* ===== report ===== */
+  function run() {
+    var stock = parseFloat($('stock').value);
+    var kerf = parseFloat($('kerf').value);
+    var trim = parseFloat($('trim').value);
+    var keepMin = parseFloat($('keepmin').value);
+    var usable = stock - trim;
+
+    var groups = {}, order = [], tooLong = [];
+    for (var i = 0; i < cuts.length; i++) {
+      var L = cutLen(cuts[i]);
+      if (L <= 0) continue;
+      if (L > usable + 1e-9) { tooLong.push(cuts[i].label + ' @ ' + fmt(L, 3) + '"'); continue; }
+      var key = matKey(cuts[i]);
+      if (!groups[key]) {
+        groups[key] = { name: matName(cuts[i]), lbIn: lbPerIn(cuts[i]), pieces: [] };
+        order.push(key);
+      }
+      for (var q = 0; q < cuts[i].qty; q++) {
+        groups[key].pieces.push({ len: L, label: cuts[i].label, color: PALETTE[i % PALETTE.length] });
+      }
+    }
+
+    var warn = $('warnbox');
+    if (tooLong.length) {
+      warn.innerHTML = '<strong>Won\'t fit the stock:</strong> ' + tooLong.join(', ') +
+        '. Usable length ' + fmt(usable, 3) + '" after end trim. Excluded from the nest — splice them or order longer stock.';
+      warn.hidden = false;
+    } else {
+      warn.innerHTML = '';
+      warn.hidden = true;
+    }
+
+    var host = $('layout');
+    host.innerHTML = '';
+
+    var totalSticks = 0, totalCut = 0, totalBought = 0, totalWeight = 0;
+    var totalKerf = 0, totalTrim = 0, matCount = 0;
+
+    for (var g = 0; g < order.length; g++) {
+      var grp = groups[order[g]];
+      if (!grp.pieces.length) continue;
+      matCount++;
+      grp.pieces.sort(function (a, b) { return b.len - a.len; });
+
+      var A = pack(grp.pieces, usable, kerf, 'ffd');
+      var B = pack(grp.pieces, usable, kerf, 'bfd');
+      var bins;
+      if (A.length !== B.length) bins = (A.length < B.length) ? A : B;
+      else bins = (longestDrop(A, kerf) >= longestDrop(B, kerf)) ? A : B;
+
+      var cutSum = 0;
+      for (var p = 0; p < grp.pieces.length; p++) cutSum += grp.pieces[p].len;
+      var bought = bins.length * stock;
+      var gWeight = cutSum * grp.lbIn;
+      // n pieces plus a drop needs n cuts; with no drop it needs n-1.
+      var gKerf = 0;
+      for (var kb = 0; kb < bins.length; kb++) gKerf += stickAccount(bins[kb], kerf).kerfLoss;
+      var gTrim = bins.length * trim;
+
+      totalSticks += bins.length; totalCut += cutSum;
+      totalBought += bought; totalWeight += gWeight;
+      totalKerf += gKerf; totalTrim += gTrim;
+
+      var wrapG = document.createElement('div');
+      wrapG.className = 'matgroup';
+
+      var gh = document.createElement('div');
+      gh.className = 'matgroup-head';
+      var gn = document.createElement('div');
+      gn.className = 'matgroup-name'; gn.textContent = grp.name;
+      var gm = document.createElement('div');
+      gm.className = 'matgroup-meta';
+      gm.textContent = bins.length + ' × ' + inFt(stock) + '  •  ' +
+        fmt(100 * cutSum / bought, 1) + '%  •  ' + fmt(gWeight, 1) + ' lb';
+      gh.appendChild(gn); gh.appendChild(gm);
+      wrapG.appendChild(gh);
+
+      for (var s = 0; s < bins.length; s++) {
+        var bin = bins[s];
+        var acct = stickAccount(bin, kerf);
+        var drop = acct.drop;
+        var keep = keepMin > 0 && drop >= keepMin;
+        var nCuts = acct.cuts;
+        var lossLen = acct.kerfLoss + trim;
+
+        var st = document.createElement('div');
+        st.className = 'stick';
+
+        var head = document.createElement('div');
+        head.className = 'stick-head';
+        var no = document.createElement('span');
+        no.className = 'stick-no'; no.textContent = 'STICK ' + (s + 1);
+        var dr = document.createElement('span');
+        dr.className = 'stick-drop' + (keep ? ' keep' : '');
+        dr.textContent = 'drop ' + fmt(drop, 3) + '"' + (keep ? ' ✓ rack' : '');
+        head.appendChild(no); head.appendChild(dr);
+        st.appendChild(head);
+
+        // Widths sum to the full stick: pieces + kerf + trim + drop.
+        var bar = document.createElement('div');
+        bar.className = 'bar';
+        var counts = {};
+        for (var it = 0; it < bin.items.length; it++) {
+          var pc = bin.items[it];
+          var seg = document.createElement('div');
+          seg.className = 'seg';
+          seg.style.width = (100 * pc.len / stock) + '%';
+          seg.style.background = pc.color;
+          seg.title = pc.label + ' ' + fmt(pc.len, 3) + '"';
+          if (100 * pc.len / stock > MIN_LABEL_PCT) seg.textContent = fmt(pc.len, 2) + '"';
+          bar.appendChild(seg);
+          counts[pc.label] = (counts[pc.label] || 0) + 1;
+        }
+        var lossSeg = document.createElement('div');
+        lossSeg.className = 'seg seg-loss';
+        lossSeg.style.width = (100 * lossLen / stock) + '%';
+        lossSeg.title = nCuts + ' cuts (' + fmt(acct.kerfLoss, 3) + '" kerf) + ' + trim + '" trim';
+        bar.appendChild(lossSeg);
+
+        var dropSeg = document.createElement('div');
+        dropSeg.className = 'seg seg-drop' + (keep ? ' keep' : '');
+        dropSeg.style.width = (100 * drop / stock) + '%';
+        dropSeg.title = 'remnant ' + fmt(drop, 3) + '"';
+        if (100 * drop / stock > MIN_LABEL_PCT) dropSeg.textContent = fmt(drop, 2) + '"';
+        bar.appendChild(dropSeg);
+        st.appendChild(bar);
+
+        var seq = document.createElement('div');
+        seq.className = 'stick-seq';
+        var parts = [];
+        for (var lbl in counts) {
+          if (Object.prototype.hasOwnProperty.call(counts, lbl)) parts.push(counts[lbl] + ' × ' + lbl);
+        }
+        seq.textContent = '▸ ' + parts.join('   ·   ') + '   —   ' +
+          bin.items.length + ' pieces / ' + nCuts + ' cuts';
+        st.appendChild(seq);
+
+        wrapG.appendChild(st);
+      }
+
+      var dl = document.createElement('div');
+      dl.className = 'droplist';
+      var keepTot = 0, scrapTot = 0, rows = [];
+      for (var d = 0; d < bins.length; d++) {
+        var rd = stickAccount(bins[d], kerf).drop;
+        var k2 = keepMin > 0 && rd >= keepMin;
+        if (k2) keepTot += rd; else scrapTot += rd;
+        rows.push('<span class="' + (k2 ? 'keep' : 'scrap') + '">#' + (d + 1) + ' → ' +
+          fmt(rd, 2) + '"' + (k2 ? ' ✓' : '') + '</span>');
+      }
+      dl.innerHTML = 'REMNANTS: ' + rows.join('   ') +
+        '<br><span class="keep">rack ' + fmt(keepTot, 2) + '"</span>  ·  ' +
+        '<span class="scrap">scrap ' + fmt(scrapTot, 2) + '"</span>  ·  ' +
+        'kerf ' + fmt(gKerf, 2) + '"  ·  trim ' + fmt(gTrim, 2) + '"';
+      wrapG.appendChild(dl);
+
+      host.appendChild(wrapG);
+    }
+
+    if (!matCount) {
+      ['r-sticks', 'r-yield', 'r-wt'].forEach(function (id) { $(id).textContent = DASH; });
+      ['r-sticksub', 'r-yieldsub', 'r-wtsub'].forEach(function (id) { $(id).textContent = ''; });
+      return;
+    }
+
+    $('r-sticks').textContent = totalSticks;
+    $('r-sticksub').textContent = matCount + ' STOCK TYPE' + (matCount > 1 ? 'S' : '') +
+      ' · ' + fmt(totalBought / 12, 1) + ' ft bought';
+    $('r-yield').textContent = fmt(100 * totalCut / totalBought, 1) + '%';
+    $('r-yieldsub').textContent = fmt(totalCut, 1) + '" cut · ' +
+      fmt(totalKerf, 1) + '" kerf · ' + fmt(totalTrim, 1) + '" trim';
+    $('r-wt').textContent = fmt(totalWeight, 0) + ' lb';
+    $('r-wtsub').textContent = 'FINISHED CUTS / STEEL';
+  }
+
+  /* ===== init ===== */
+  fillSelect($('stock'), STOCKS, nearestIn(STOCKS, 240), function (v) { return inFt(v) + '  (' + v + '")'; });
+  fillSelect($('trim'), TRIMS, nearestIn(TRIMS, 0.5), function (v) { return v === 0 ? 'none' : fmt(v, 3) + '"'; });
+  fillSelect($('keepmin'), KEEPMINS, nearestIn(KEEPMINS, 12), function (v) { return v === 0 ? 'keep nothing' : fmt(v, 0) + '"'; });
+  ['stock', 'kerf', 'trim', 'keepmin'].forEach(function (id) {
+    $(id).addEventListener('change', run);
+  });
+
+  renderCuts();
+  run();
+})();
+</script>
+</body>
+</html>

@@ -1,11 +1,13 @@
 // Service worker for Turmanator Shop Tools.
 // Bump CACHE when redeploying so phones pick up the new version.
-var CACHE = 'shop-tools-v2';
+var CACHE = 'shop-tools-v3';
 var SHELL = [
   './',
   './index.html',
   './axle/',
   './axle/index.html',
+  './cut/',
+  './cut/index.html',
   './manifest.webmanifest',
   './apple-touch-icon.png'
 ];
@@ -31,6 +33,15 @@ self.addEventListener('activate', function (e) {
 // Stale-while-revalidate: answer instantly from cache so the page opens with no
 // signal, and refresh the copy in the background so a redeploy is picked up on
 // the next launch.
+// Offline navigations land on the page the viewer actually asked for.
+function navigationFallback(req) {
+  if (req.mode !== 'navigate') return './index.html';
+  var path = new URL(req.url).pathname;
+  if (path.indexOf('/axle') === 0) return './axle/index.html';
+  if (path.indexOf('/cut') === 0) return './cut/index.html';
+  return './index.html';
+}
+
 self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
@@ -46,8 +57,7 @@ self.addEventListener('fetch', function (e) {
         return res;
       }).catch(function () {
         return cached || caches.match(
-          req.mode === 'navigate' && new URL(req.url).pathname.indexOf('/axle') === 0
-            ? './axle/index.html' : './index.html');
+          navigationFallback(req));
       });
       return cached || network;
     })
