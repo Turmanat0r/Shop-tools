@@ -3,59 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0b0722">
+<meta name="theme-color" content="#131211">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <link rel="manifest" href="../manifest.webmanifest">
 <title>Fab Calculators</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
-    --space: #0b0722;
-    --space-2: #150d38;
-    --hull: #23184f;
-    --chrome: #d8dde6;
-    --chrome-dk: #8b93a6;
-    --chrome-shine: #ffffff;
-    --hot-pink: #ff3d9a;
-    --zap-yellow: #ffd93d;
-    --lime: #6ef26e;
-    --cyan: #46e0ff;
+    --dash: #131211;
+    --dash-2: #1e1c1a;
+    --hull: #2b2825;
+    --chrome: #d9d4c8;
+    --chrome-dk: #6b655a;
+    --chrome-shine: #fff8e8;
+    --amber: #ffb000;
+    --amber-dim: #cc8400;
+    --lime: #4dff8a;
+    --cyan: #4de0ff;
     --orange: #ff8a3d;
-    --red: #ff4747;
-    --text: #f4f1ff;
-    --muted: #a99ed6;
-    --dim: #6f65a3;
+    --red: #ff3b3b;
+    --text: #f2ede0;
+    --muted: #ab9f8c;
+    --dim: #746a5a;
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
-    background: var(--space);
+    background: var(--dash);
     color: var(--text);
-    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
-  /* starfield */
+  /* night desert highway: asphalt vignette, one high-beam, one taillight */
   body::before {
     content:''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background-image:
-      radial-gradient(1.6px 1.6px at 12% 18%, #fff, transparent),
-      radial-gradient(1.4px 1.4px at 78% 8%, #fff, transparent),
-      radial-gradient(1.8px 1.8px at 34% 62%, #ffe9a8, transparent),
-      radial-gradient(1.3px 1.3px at 88% 44%, #fff, transparent),
-      radial-gradient(1.5px 1.5px at 58% 88%, #c9f0ff, transparent),
-      radial-gradient(1.2px 1.2px at 22% 91%, #fff, transparent),
-      radial-gradient(1.7px 1.7px at 68% 26%, #fff, transparent),
-      radial-gradient(1.3px 1.3px at 6% 52%, #ffd1f0, transparent),
-      radial-gradient(1.5px 1.5px at 46% 34%, #fff, transparent),
-      radial-gradient(1.2px 1.2px at 94% 72%, #fff, transparent),
-      radial-gradient(ellipse at 50% 0%, rgba(255,61,154,0.14), transparent 62%),
-      radial-gradient(ellipse at 20% 100%, rgba(70,224,255,0.10), transparent 58%);
-    background-repeat: repeat;
-    background-size: 340px 340px, 340px 340px, 420px 420px, 420px 420px,
-                     500px 500px, 500px 500px, 380px 380px, 380px 380px,
-                     460px 460px, 460px 460px, 100% 100%, 100% 100%;
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px),
+      radial-gradient(ellipse 60% 40% at 22% -6%, rgba(255,176,0,0.16), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 88% 6%, rgba(255,59,59,0.10), transparent 62%),
+      radial-gradient(ellipse 80% 60% at 50% 108%, rgba(77,224,255,0.06), transparent 65%),
+      linear-gradient(180deg, #0e0d0c, #131211 40%, #0a0a09);
+    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-size: 100% 3px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   }
   .wrap {
     position: relative; z-index: 5; max-width: 720px; margin: 0 auto;
@@ -63,32 +54,34 @@
   }
   .backlink {
     display: inline-flex; align-items: center; min-height: 44px; padding: 0 15px;
-    margin: 0 0 16px; border-radius: 999px; border: 3px solid rgba(0,0,0,0.4);
-    font-family: 'Bungee', cursive; font-size: 11px; letter-spacing: 0.05em;
-    color: #2a1400; text-decoration: none;
-    background: linear-gradient(180deg, #8fecff, var(--cyan));
-    box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), 0 4px 0 rgba(0,0,0,0.45);
+    margin: 0 0 16px; border-radius: 8px; border: 3px solid rgba(0,0,0,0.5);
+    font-family: 'Teko', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.08em;
+    color: #1c1400; text-decoration: none;
+    background: linear-gradient(180deg, #ffd166, var(--amber));
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.4), 0 4px 0 rgba(0,0,0,0.5);
   }
-  .backlink:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 2px 0 rgba(0,0,0,0.45); }
+  .backlink:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), 0 2px 0 rgba(0,0,0,0.5); }
   .warn {
-    border-radius: 12px; padding: 11px 13px; margin-bottom: 14px;
-    font-size: 12px; line-height: 1.55; color: #2a1400;
+    border-radius: 8px; padding: 11px 13px; margin-bottom: 14px;
+    font-size: 12px; line-height: 1.55; color: #1c1400;
     background: linear-gradient(180deg, #ffc46b, var(--orange));
-    border: 3px solid rgba(0,0,0,0.4);
+    border: 3px solid rgba(0,0,0,0.45);
     box-shadow: inset 0 2px 0 rgba(255,255,255,0.3);
   }
   .warn[hidden] { display: none; }
 
-  /* ---- chrome bezel helper ---- */
+  /* ---- brushed metal bezel helper ---- */
   .bezel {
-    background: linear-gradient(160deg, var(--hull), var(--space-2));
+    background:
+      repeating-linear-gradient(100deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px),
+      linear-gradient(160deg, var(--hull), var(--dash-2));
     border: 3px solid var(--chrome-dk);
-    border-radius: 18px;
+    border-radius: 8px;
     box-shadow:
-      inset 0 2px 0 rgba(255,255,255,0.28),
-      inset 0 -3px 0 rgba(0,0,0,0.45),
-      0 6px 0 rgba(0,0,0,0.5),
-      0 10px 26px rgba(0,0,0,0.55);
+      inset 0 2px 0 rgba(255,255,255,0.18),
+      inset 0 -3px 0 rgba(0,0,0,0.5),
+      0 6px 0 rgba(0,0,0,0.55),
+      0 10px 26px rgba(0,0,0,0.6);
   }
 
   /* ---- header ---- */
@@ -103,35 +96,35 @@
   }
   .co {
     font-family:'Share Tech Mono',monospace; font-size: 11px;
-    letter-spacing: 0.3em; color: var(--zap-yellow); margin-bottom: 10px;
+    letter-spacing: 0.3em; color: var(--amber); margin-bottom: 10px;
   }
   h1 {
-    font-family:'Bungee',cursive; font-size: clamp(26px,8.4vw,40px);
-    margin: 0; line-height: 1; letter-spacing: 0.02em;
-    background: linear-gradient(180deg, #fff 0%, var(--zap-yellow) 48%, var(--orange) 100%);
+    font-family:'Teko',sans-serif; font-weight: 700; font-size: clamp(32px,10vw,48px);
+    margin: 0; line-height: 1; letter-spacing: 0.04em;
+    background: linear-gradient(180deg, #fff 0%, var(--amber) 55%, var(--amber-dim) 100%);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 3px 0 rgba(0,0,0,0.6));
+    filter: drop-shadow(0 3px 0 rgba(0,0,0,0.65));
   }
   .tagline {
     font-family:'Share Tech Mono',monospace;
     font-size: 11.5px; color: var(--muted); margin-top: 11px; letter-spacing: 0.12em;
   }
 
-  /* ---- big candy tabs ---- */
+  /* ---- dash-switch tabs ---- */
   .tabs { display: flex; gap: 9px; margin-bottom: 18px; }
   .tab {
-    flex: 1; padding: 14px 6px; cursor: pointer; text-align: center;
-    font-family:'Bungee',cursive; font-size: 12px; letter-spacing: 0.04em;
-    border-radius: 14px; border: 3px solid rgba(0,0,0,0.4);
-    color: rgba(0,0,0,0.62);
-    background: linear-gradient(180deg, #6d6a90, #4a4770);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), 0 5px 0 rgba(0,0,0,0.45);
+    flex: 1; padding: 12px 6px; cursor: pointer; text-align: center;
+    font-family:'Teko',sans-serif; font-weight: 600; font-size: 16px; letter-spacing: 0.04em;
+    border-radius: 6px; border: 3px solid rgba(0,0,0,0.5);
+    color: rgba(242,237,224,0.55);
+    background: linear-gradient(180deg, #3a3733, #262421);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.12), 0 5px 0 rgba(0,0,0,0.5);
     transition: transform 0.08s, box-shadow 0.08s;
   }
-  .tab:active { transform: translateY(3px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 2px 0 rgba(0,0,0,0.45); }
-  .tab.active { color: #2a1400; }
-  .tab[data-tab="beam"].active   { background: linear-gradient(180deg, #ffe680, var(--zap-yellow)); }
+  .tab:active { transform: translateY(3px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 2px 0 rgba(0,0,0,0.5); }
+  .tab.active { color: #1c1400; }
+  .tab[data-tab="beam"].active   { background: linear-gradient(180deg, #ffd166, var(--amber)); }
   .tab[data-tab="angle"].active  { background: linear-gradient(180deg, #8affb0, var(--lime)); }
   .tab[data-tab="hyp"].active    { background: linear-gradient(180deg, #8fecff, var(--cyan)); }
 
@@ -139,10 +132,10 @@
   .panel { padding: 17px; margin-bottom: 16px; display: none; }
   .panel.active { display: block; }
   .panel-strip {
-    font-family:'Bungee',cursive; font-size: 11px; letter-spacing: 0.06em;
-    color: var(--space); background: var(--zap-yellow);
-    display: inline-block; padding: 6px 12px; border-radius: 999px;
-    margin-bottom: 15px; box-shadow: 0 3px 0 rgba(0,0,0,0.45);
+    font-family:'Teko',sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.06em;
+    color: var(--dash); background: var(--amber);
+    display: inline-block; padding: 5px 12px; border-radius: 4px;
+    margin-bottom: 15px; box-shadow: 0 3px 0 rgba(0,0,0,0.5);
   }
 
   .field { margin-bottom: 14px; }
@@ -156,43 +149,43 @@
   select {
     width: 100%; padding: 12px 10px; font-size: 16px;
     font-family:'Share Tech Mono',monospace; font-weight: 700;
-    color: #1b1030; border-radius: 11px;
-    border: 3px solid rgba(0,0,0,0.42);
-    background: linear-gradient(180deg, #ffffff, #cfd6e6);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,0.9), 0 4px 0 rgba(0,0,0,0.4);
+    color: #1c1400; border-radius: 6px;
+    border: 3px solid rgba(0,0,0,0.45);
+    background: linear-gradient(180deg, #efe9da, #c9c1af);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.9), 0 4px 0 rgba(0,0,0,0.42);
     outline: none; -webkit-appearance: none; appearance: none;
     background-image:
-      linear-gradient(180deg, #ffffff, #cfd6e6),
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 7 6-7' stroke='%23ff3d9a' stroke-width='2.6' fill='none' stroke-linecap='round'/></svg>");
+      linear-gradient(180deg, #efe9da, #c9c1af),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9'><path d='M1 1l6 7 6-7' stroke='%23cc8400' stroke-width='2.6' fill='none' stroke-linecap='round'/></svg>");
     background-repeat: no-repeat, no-repeat;
     background-position: 0 0, right 11px center;
     background-size: 100% 100%, 14px 9px;
     padding-right: 32px;
   }
-  select:focus { border-color: var(--hot-pink); }
+  select:focus { border-color: var(--amber); }
 
-  /* toggle buttons */
+  /* toggle switches */
   .toggle-group { display: flex; gap: 8px; flex-wrap: wrap; }
   .toggle-btn {
     flex: 1; min-width: 128px; padding: 11px 8px; cursor: pointer;
     text-align: center; font-size: 12px; font-weight: 700;
-    border-radius: 11px; border: 3px solid rgba(0,0,0,0.4);
-    color: rgba(255,255,255,0.72);
-    background: linear-gradient(180deg, #5b5686, #3b3663);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,0.25), 0 4px 0 rgba(0,0,0,0.42);
+    border-radius: 6px; border: 3px solid rgba(0,0,0,0.5);
+    color: rgba(242,237,224,0.68);
+    background: linear-gradient(180deg, #3e3a35, #262320);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.15), 0 4px 0 rgba(0,0,0,0.45);
   }
-  .toggle-btn:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 2px 0 rgba(0,0,0,0.42); }
+  .toggle-btn:active { transform: translateY(2px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.1), 0 2px 0 rgba(0,0,0,0.45); }
   .toggle-btn.active {
-    color: #2a1400;
-    background: linear-gradient(180deg, #ffb0d6, var(--hot-pink));
+    color: #1c1400;
+    background: linear-gradient(180deg, #ffd166, var(--amber));
   }
 
   /* ---- hero gauge ---- */
   .hero {
-    border-radius: 14px; padding: 15px; margin-bottom: 15px;
-    background: radial-gradient(ellipse at 50% 0%, #2c1f63, #120b30);
+    border-radius: 8px; padding: 15px; margin-bottom: 15px;
+    background: radial-gradient(ellipse at 50% 0%, #262220, #100e0c);
     border: 3px solid var(--chrome-dk);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -3px 0 rgba(0,0,0,0.5);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.12), inset 0 -3px 0 rgba(0,0,0,0.55);
     text-align: center;
   }
   .hero-label {
@@ -200,16 +193,16 @@
     color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em;
   }
   .hero-num {
-    font-family:'Bungee',cursive; font-size: 36px; line-height: 1.15;
-    color: var(--zap-yellow); margin-top: 6px;
-    text-shadow: 0 0 20px rgba(255,217,61,0.6), 0 3px 0 rgba(0,0,0,0.55);
+    font-family:'Teko',sans-serif; font-weight: 700; font-size: 42px; line-height: 1.15;
+    color: var(--amber); margin-top: 6px;
+    text-shadow: 0 0 22px rgba(255,176,0,0.65), 0 3px 0 rgba(0,0,0,0.6);
   }
   .hero-sub { font-size: 11.5px; color: var(--dim); margin-top: 7px; }
 
   .results { margin-top: 8px; }
   .result-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 11px 0; border-bottom: 2px dotted rgba(169,158,214,0.28); gap: 12px;
+    padding: 11px 0; border-bottom: 2px dotted rgba(171,159,140,0.28); gap: 12px;
   }
   .result-row:last-child { border-bottom: none; }
   .result-label { font-size: 13px; }
@@ -219,46 +212,21 @@
     color: var(--cyan); white-space: nowrap; font-weight: 700;
   }
   .emph .result-label { font-weight: 700; }
-  .emph .result-value { font-size: 20px; color: var(--zap-yellow); }
+  .emph .result-value { font-size: 20px; color: var(--amber); }
 
   .note { color: var(--dim); font-size: 11.5px; line-height: 1.75; margin-top: 15px; }
   .note strong { color: var(--muted); }
 
   .section-label {
-    font-family:'Bungee',cursive; font-size: 11px; color: var(--hot-pink);
+    font-family:'Teko',sans-serif; font-weight: 600; font-size: 15px; color: var(--red);
     margin-bottom: 12px; letter-spacing: 0.04em;
   }
 
 
 
-  .tab-kick {
-    display: block; font-family:'Share Tech Mono',monospace;
-    font-size: 7.5px; letter-spacing: 0.1em; line-height: 1.2;
-    opacity: 0.72; margin-bottom: 4px; font-weight: 400;
-  }
-  .panel-strip .strip-kick {
-    display: block; font-family:'Share Tech Mono',monospace;
-    font-size: 8px; letter-spacing: 0.14em; opacity: 0.7; margin-bottom: 3px;
-  }
   .strip-price {
     font-family:'Share Tech Mono',monospace; font-size: 9.5px;
-    color: var(--space); opacity: 0.72; margin-left: 7px;
-  }
-
-/* ---- gag button ---- */
-  .gag-wrap { text-align: center; margin: 4px 0 20px; }
-  .gag {
-    font-family:'Bungee',cursive; font-size: 12px; cursor: pointer;
-    padding: 13px 22px; border-radius: 999px; color: #fff;
-    border: 3px solid rgba(0,0,0,0.45);
-    background: linear-gradient(180deg, #ff7a7a, var(--red));
-    box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), 0 5px 0 #7a1414;
-    letter-spacing: 0.05em;
-  }
-  .gag:active { transform: translateY(3px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 2px 0 #7a1414; }
-  .gag-msg {
-    font-family:'Share Tech Mono',monospace; font-size: 12px;
-    color: var(--zap-yellow); margin-top: 11px; min-height: 18px; letter-spacing: 0.06em;
+    color: var(--dash); opacity: 0.72; margin-left: 7px;
   }
 
   /* ===== desktop ===== phone layout below 900px is untouched ===== */
@@ -274,7 +242,7 @@
   .jobbar {
     display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
     margin: 0 0 16px; padding: 10px 11px;
-    border: 3px solid rgba(0,0,0,0.4); border-radius: 11px; background: rgba(35,24,79,0.55);
+    border: 3px solid rgba(0,0,0,0.5); border-radius: 8px; background: rgba(43,40,37,0.55);
   }
   .jobbar-sel {
     flex: 1 1 150px; min-width: 130px; min-height: 40px;
@@ -282,13 +250,13 @@
   }
   .jobbar-btn {
     min-height: 40px; padding: 0 13px; cursor: pointer; font-size: 12px;
-    border-radius: 11px; border: 3px solid rgba(0,0,0,0.4);
-    background: linear-gradient(180deg,#ffb0d6,var(--hot-pink)); color: #2a1400; font-family: inherit;
+    border-radius: 6px; border: 3px solid rgba(0,0,0,0.5);
+    background: linear-gradient(180deg,#ffd166,var(--amber)); color: #1c1400; font-family: inherit;
   }
   .jobbar-link {
     min-height: 40px; display: inline-flex; align-items: center; padding: 0 11px;
     font-size: 12px; text-decoration: none; color: var(--cyan);
-    border: 3px solid rgba(0,0,0,0.4); border-radius: 11px;
+    border: 3px solid rgba(0,0,0,0.5); border-radius: 6px;
   }
   .jobbar-msg { flex: 1 1 100%; font-size: 11.5px; color: var(--muted); min-height: 14px; }
 </style>
@@ -299,7 +267,7 @@
   <div class="header bezel">
     <div class="co">TURMANATOR TRAILER &amp; IRONWORKS</div>
     <h1>FAB CALCULATORS</h1>
-    <div class="tagline">STEEL &middot; ANGLES &middot; TRIANGLES &middot; NO GUESSING</div>
+    <div class="tagline">STEEL &middot; ANGLES &middot; TRIANGLES &middot; FULL THROTTLE</div>
   </div>
 
   <a class="backlink" href="../">&larr; SHOP SYSTEMS</a>
@@ -307,14 +275,14 @@
   <div class="jobbar" id="jobbar"></div>
 
   <div class="tabs" id="main-tabs">
-    <div class="tab active" data-tab="beam"><span class="tab-kick">TURMANATOR THE</span>BEAM</div>
-    <div class="tab" data-tab="angle"><span class="tab-kick">TURMANATOR THE</span>ANGLE</div>
-    <div class="tab" data-tab="hyp"><span class="tab-kick">TURMANATOR THE</span>TRIANGLE</div>
+    <div class="tab active" data-tab="beam">BEAM</div>
+    <div class="tab" data-tab="angle">ANGLE</div>
+    <div class="tab" data-tab="hyp">TRIANGLE</div>
   </div>
 
   <!-- BEAM PANEL -->
   <div class="panel bezel active" id="panel-beam">
-    <div class="panel-strip"><span class="strip-kick">TURMANATOR THE</span>BEAM CALCULATOR<span class="strip-price">$29.99 &middot; SOLD OUT</span></div>
+    <div class="panel-strip">BEAM CALCULATOR<span class="strip-price">TELLTALE: ALL CLEAR</span></div>
     <div class="field">
       <label>Tube size</label>
       <select id="b-size"></select>
@@ -382,7 +350,7 @@
 
   <!-- ANGLE PANEL -->
   <div class="panel bezel" id="panel-angle">
-    <div class="panel-strip"><span class="strip-kick">TURMANATOR THE</span>ANGLE FINDER<span class="strip-price">$19.99 &middot; BACKORDERED</span></div>
+    <div class="panel-strip">ANGLE FINDER<span class="strip-price">TELLTALE: ARMED</span></div>
     <div class="field">
       <label>Known angle (degrees)</label>
       <select id="a-angle"></select>
@@ -409,7 +377,7 @@
 
   <!-- HYPOTENUSE PANEL -->
   <div class="panel bezel" id="panel-hyp">
-    <div class="panel-strip"><span class="strip-kick">TURMANATOR THE</span>TRIANGLE SOLVER<span class="strip-price">$24.99 &middot; HOT ITEM</span></div>
+    <div class="panel-strip">TRIANGLE SOLVER<span class="strip-price">TELLTALE: REDLINE</span></div>
     <div class="tabs" id="hyp-tabs" style="margin-bottom:16px;">
       <div class="tab active" data-htab="legs" style="font-size:10.5px;">TWO LEGS</div>
       <div class="tab" data-htab="legangle" style="font-size:10.5px;">LEG + ANGLE</div>
@@ -445,12 +413,6 @@
       </div>
     </div>
     <p class="note">Units are whatever you enter &mdash; just stay consistent. Angles are measured from the leg, not the hypotenuse.</p>
-  </div>
-
-
-  <div class="gag-wrap">
-    <button class="gag" id="gagbtn">DO NOT PRESS THIS BUTTON</button>
-    <div class="gag-msg" id="gagmsg"></div>
   </div>
 
 </div>
@@ -765,28 +727,6 @@
   calcMiter();
   calcHypLegs();
   calcHypAngle();
-
-  /* ---- gag button ---- */
-  (function () {
-    var lines = [
-      'You pressed it. Nothing exploded. Impressive restraint elsewhere.',
-      'Button pressed. Somewhere, a coffee got cold.',
-      'Warning: this button is purely decorative and deeply proud of it.',
-      'Self-destruct postponed. You still have welding to do.',
-      'Congratulations, you have discovered the only useless control here.',
-      'That did nothing. Do it again, see if it does nothing harder.',
-      'Button acknowledges your input and respectfully ignores it.',
-      'Systems nominal. Ego slightly inflated.'
-    ];
-    var btn = $('gagbtn'), msg = $('gagmsg'), i = 0;
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      msg.textContent = lines[i % lines.length];
-      i++;
-      btn.style.transform = 'translateY(3px)';
-      setTimeout(function () { btn.style.transform = ''; }, 110);
-    });
-  })();
 
   // ---- job entry ----
   window.jobEntry = function () {
