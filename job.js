@@ -90,6 +90,41 @@
       }
       writeAll(data);
     },
+    // Everything on this device, as one plain object ready for JSON.stringify.
+    // Jobs are per-device by design (see file header) -- this is the escape
+    // hatch for moving them to another device by hand.
+    exportData: function () {
+      var data = readAll();
+      return { app: 'turmanator-shop-tools', kind: 'jobs', version: 1, exportedAt: Date.now(), jobs: data.jobs };
+    },
+    // mode 'merge' (default) adds the imported jobs alongside what's already
+    // here, renumbered so ids never collide. mode 'replace' wipes this
+    // device's jobs first. Returns { ok, count }.
+    importData: function (payload, mode) {
+      if (!payload || Object.prototype.toString.call(payload.jobs) !== '[object Array]') {
+        return { ok: false, count: 0 };
+      }
+      var data = (mode === 'replace') ? { seq: 1000, jobs: [] } : readAll();
+      var newJobs = payload.jobs.map(function (j) {
+        data.seq = (data.seq || 1000) + 1;
+        var entries = Object.prototype.toString.call(j.entries) === '[object Array]' ? j.entries : [];
+        return {
+          id: String(data.seq),
+          name: j.name || '',
+          created: j.created || Date.now(),
+          entries: entries.map(function (e) {
+            return {
+              id: uid(), tool: e.tool || '', at: e.at || Date.now(),
+              title: e.title || e.tool || '', summary: e.summary || [], materials: e.materials || []
+            };
+          })
+        };
+      });
+      data.jobs = newJobs.concat(data.jobs);
+      var ok = writeAll(data);
+      if (ok && newJobs.length) setCurrentId(newJobs[0].id);
+      return { ok: ok, count: newJobs.length };
+    },
     // Roll every entry's materials into one list, merged by description.
     totals: function (job) {
       var byDesc = {}, order = [], lb = 0, sticks = 0;

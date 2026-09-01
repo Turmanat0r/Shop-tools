@@ -85,7 +85,9 @@ claimed a simplification was conservative when it erred the other way.
 
 - Jobs are per-device `localStorage`. No sync, no accounts. Clearing site data
   erases them; the printed sheet is the durable copy. Sync would need a database
-  and auth, and the site is public.
+  and auth, and the site is public. `job/` has manual Export/Import (a
+  downloaded JSON file) for moving jobs between devices by hand; import
+  renumbers job ids so merging never collides with what's already on a device.
 - The job sheet carries quantities and specs only. No pricing.
 - Fonts load from Google. Offline they fall back; the service worker only caches
   same-origin files.
