@@ -349,6 +349,7 @@
   </div>
 </div>
 
+<script src="../state.js"></script>
 <script>
 (function () {
   'use strict';
@@ -931,6 +932,38 @@
 
   renderCuts();
   run();
+
+  /* ---- field memory: keep entries across page visits ---- */
+  var CUT_STATE_KEY = 'cut';
+  function cutSnapshot() {
+    return {
+      cuts: cuts,
+      stock: $('stock').value, kerf: $('kerf').value, trim: $('trim').value, keepmin: $('keepmin').value
+    };
+  }
+  function cutRestore(s) {
+    if (!s) return;
+    var TS = window.TState;
+    if (Object.prototype.toString.call(s.cuts) === '[object Array]' && s.cuts.length) {
+      cuts = s.cuts.map(function (c) {
+        return {
+          label: c.label || '', prof: profOf(c.prof).key,
+          size: Number(c.size) || 0, whole: Number(c.whole) || 0,
+          frac: Number(c.frac) || 0, qty: Number(c.qty) || 1
+        };
+      });
+      renderCuts();
+    }
+    TS.setSelect($('stock'), s.stock);
+    TS.setSelect($('kerf'), s.kerf);
+    TS.setSelect($('trim'), s.trim);
+    TS.setSelect($('keepmin'), s.keepmin);
+    run();
+  }
+  cutRestore(window.TState.load(CUT_STATE_KEY));
+  ['change', 'click', 'input'].forEach(function (evt) {
+    document.addEventListener(evt, function () { window.TState.save(CUT_STATE_KEY, cutSnapshot()); });
+  });
 
   // ---- job entry ----
   window.jobEntry = function () {

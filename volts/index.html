@@ -390,6 +390,7 @@
   </div>
 </div>
 
+<script src="../state.js"></script>
 <script>
 /* ===== wire table: ohms/1000ft, DC ampacity ===== */
 var AWG = [
@@ -822,6 +823,54 @@ for (var i=0;i<ids.length;i++)
 
 renderDevices();
 calc();
+
+/* ---- field memory: keep entries across page visits ---- */
+var VOLTS_STATE_KEY = 'volts';
+function voltsSnapshot() {
+  return {
+    items: items, srcMode: srcMode,
+    volts: document.getElementById('volts').value,
+    amps: document.getElementById('amps').value,
+    len: document.getElementById('len').value,
+    gauge: document.getElementById('gauge').value,
+    mat: document.getElementById('mat').value,
+    limit: document.getElementById('limit').value,
+    fuse: document.getElementById('fuse').value,
+    layout: document.getElementById('layout').value,
+    ggauge: document.getElementById('ggauge').value,
+    glen: document.getElementById('glen').value,
+    gscheme: document.getElementById('gscheme').value
+  };
+}
+function voltsRestore(s) {
+  if (!s) return;
+  var TS = window.TState;
+  if (Object.prototype.toString.call(s.items) === '[object Array]' && s.items.length) {
+    items = s.items.map(function (it) {
+      return { key: it.key || 'custom', w: Number(it.w) || devOf(it.key || 'custom').w, qty: Number(it.qty) || 1 };
+    });
+  }
+  if (s.srcMode === 'manual' || s.srcMode === 'build') {
+    TS.click(document.getElementById('srctabs'), 'data-src', s.srcMode);
+  }
+  renderDevices();
+  TS.setSelect(document.getElementById('volts'), s.volts);
+  TS.setSelect(document.getElementById('amps'), s.amps);
+  TS.setSelect(document.getElementById('len'), s.len);
+  TS.setSelect(document.getElementById('gauge'), s.gauge);
+  TS.setSelect(document.getElementById('mat'), s.mat);
+  TS.setSelect(document.getElementById('limit'), s.limit);
+  TS.setSelect(document.getElementById('fuse'), s.fuse);
+  TS.setSelect(document.getElementById('layout'), s.layout);
+  TS.setSelect(document.getElementById('ggauge'), s.ggauge);
+  TS.setSelect(document.getElementById('glen'), s.glen);
+  TS.setSelect(document.getElementById('gscheme'), s.gscheme);
+  calc();
+}
+voltsRestore(window.TState.load(VOLTS_STATE_KEY));
+['change', 'click', 'input'].forEach(function (evt) {
+  document.addEventListener(evt, function () { window.TState.save(VOLTS_STATE_KEY, voltsSnapshot()); });
+});
 
 /* ---- job entry ---- */
 window.jobEntry = function () {

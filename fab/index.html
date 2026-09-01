@@ -416,6 +416,7 @@
   </div>
 
 </div>
+<script src="../state.js"></script>
 <script>
 (function () {
   'use strict';
@@ -727,6 +728,44 @@
   calcMiter();
   calcHypLegs();
   calcHypAngle();
+
+  /* ---- field memory: keep entries across page visits ---- */
+  var FAB_STATE_KEY = 'fab';
+  function fabSnapshot() {
+    return {
+      size: sizeSel.value, wall: wallSel.value, span: spanSel.value,
+      defl: $('b-defl').value, dyn: $('b-dyn').value, beamCase: beamCase,
+      mainTab: document.querySelector('#main-tabs .tab.active').dataset.tab,
+      angle: $('a-angle').value, corner: $('a-corner').value,
+      hypTab: document.querySelector('#hyp-tabs .tab.active').dataset.htab,
+      lega: $('h-lega').value, legb: $('h-legb').value,
+      known: $('h-known').value, hangle: $('h-angle').value,
+      hypOpposite: String(hypOpposite)
+    };
+  }
+  function fabRestore(s) {
+    if (!s) return;
+    var TS = window.TState;
+    TS.click($('main-tabs'), 'data-tab', s.mainTab);
+    TS.setSelect(sizeSel, s.size);
+    TS.setSelect(wallSel, s.wall);
+    TS.setSelect(spanSel, s.span);
+    TS.setSelect($('b-defl'), s.defl);
+    TS.setSelect($('b-dyn'), s.dyn);
+    TS.click($('b-case'), 'data-case', s.beamCase);
+    TS.setSelect($('a-angle'), s.angle);
+    TS.setSelect($('a-corner'), s.corner);
+    TS.click($('hyp-tabs'), 'data-htab', s.hypTab);
+    TS.setSelect($('h-lega'), s.lega);
+    TS.setSelect($('h-legb'), s.legb);
+    TS.setSelect($('h-known'), s.known);
+    TS.setSelect($('h-angle'), s.hangle);
+    TS.click(oppGroup, 'data-opp', s.hypOpposite);
+  }
+  fabRestore(window.TState.load(FAB_STATE_KEY));
+  ['change', 'click'].forEach(function (evt) {
+    document.addEventListener(evt, function () { window.TState.save(FAB_STATE_KEY, fabSnapshot()); });
+  });
 
   // ---- job entry ----
   window.jobEntry = function () {

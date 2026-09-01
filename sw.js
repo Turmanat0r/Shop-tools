@@ -1,6 +1,6 @@
 // Service worker for Turmanator Shop Tools.
 // Bump CACHE when redeploying so phones pick up the new version.
-var CACHE = 'shop-tools-v7';
+var CACHE = 'shop-tools-v8';
 var SHELL = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ var SHELL = [
   './job/',
   './job/index.html',
   './job.js',
+  './state.js',
   './manifest.webmanifest',
   './apple-touch-icon.png'
 ];

@@ -422,6 +422,7 @@
   </div>
 </div>
 
+<script src="../state.js"></script>
 <script>
 (function () {
   'use strict';
@@ -1055,6 +1056,44 @@
   renderAxItems();
   syncAxleMode();
   calcAxle();
+
+  /* ---- field memory: keep entries across page visits ---- */
+  var AXLE_STATE_KEY = 'axle';
+  function axleSnapshot() {
+    return {
+      items: axItems,
+      mode: $('ax-mode').value, pos: $('ax-pos').value, bracket: $('ax-bracket').value,
+      arm: $('ax-arm').value, start: $('ax-start').value, orient: $('ax-orient').value,
+      loadstate: $('ax-loadstate').value, axlewt: $('ax-axlewt').value,
+      target: $('ax-target').value, config: $('ax-config').value
+    };
+  }
+  function axleRestore(s) {
+    if (!s) return;
+    var TS = window.TState;
+    if (Object.prototype.toString.call(s.items) === '[object Array]' && s.items.length) {
+      axItems = s.items.map(function (it) {
+        return { key: it.key || 'custom', w: Number(it.w) || 0, x: Number(it.x) || 0, len: Number(it.len) || 0 };
+      });
+      renderAxItems();
+    }
+    TS.setSelect($('ax-mode'), s.mode);
+    TS.setSelect($('ax-pos'), s.pos);
+    TS.setSelect($('ax-bracket'), s.bracket);
+    TS.setSelect($('ax-arm'), s.arm);
+    TS.setSelect($('ax-start'), s.start);
+    TS.setSelect($('ax-orient'), s.orient);
+    TS.setSelect($('ax-loadstate'), s.loadstate);
+    TS.setSelect($('ax-axlewt'), s.axlewt);
+    TS.setSelect($('ax-target'), s.target);
+    TS.setSelect($('ax-config'), s.config);
+    syncAxleMode();
+    calcAxle();
+  }
+  axleRestore(window.TState.load(AXLE_STATE_KEY));
+  ['change', 'click', 'input'].forEach(function (evt) {
+    document.addEventListener(evt, function () { window.TState.save(AXLE_STATE_KEY, axleSnapshot()); });
+  });
 
   // ---- job entry ----
   window.jobEntry = function () {

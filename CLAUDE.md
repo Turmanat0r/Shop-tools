@@ -17,6 +17,7 @@ volts/          DC voltage drop, fuse, ground sizing
 convert/        Fraction / decimal / metric
 job/            Job sheet: rolls saved entries into a printable quote
 job.js          Shared job store (localStorage) + the save bar
+state.js        Per-tool field memory (localStorage) -- restores entries on return
 sw.js           Service worker, caches every page
 ```
 
@@ -80,6 +81,23 @@ changed, and keep the verified engine.
 
 The "backwards note" pattern is worth watching for generally: several notes
 claimed a simplification was conservative when it erred the other way.
+
+## Field memory (state.js)
+
+Every tool page auto-saves its own fields to `localStorage` and restores them
+on the next visit, so switching tools (or closing the tab) doesn't mean
+re-entering everything. It works by **replaying the page's own handlers**:
+`TState.setSelect`/`TState.click` set a value and then fire the same
+change/click event a user interaction would, so restoring a field runs through
+the exact same code path — including rebuilding dependent option lists — as
+picking it by hand. It never recomputes anything itself.
+
+Each page defines its own `snapshot()`/`restore()` pair next to its other
+init code (search `_STATE_KEY`), because each tool's state shape differs —
+plain fields for `convert/`, a dynamic item list plus fields for `axle/`,
+`cut/`, and `volts/`. **Adding a field to a tool means adding it to that
+tool's `snapshot()` and `restore()` too**, or it will silently reset on
+navigation instead of persisting.
 
 ## Deliberate limitations
 
