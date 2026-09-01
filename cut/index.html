@@ -50,7 +50,7 @@
   @media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
   .wrap {
     max-width: 720px; margin: 0 auto; position: relative;
-    padding: 0 calc(14px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+    padding: env(safe-area-inset-top) calc(14px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
   }
 
   .hazard-bar {
@@ -62,15 +62,17 @@
   }
 
   .backlink {
-    display: inline-block; margin: 16px 0 0; padding: 7px 11px;
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px;
+    margin: 0 0 18px;
     border: 1px solid var(--phos-dim); color: var(--phos);
     text-decoration: none; font-size: 15px; letter-spacing: 0.14em;
   }
+  .backlink:active { background: var(--phos-ghost); }
 
   .header {
     border: 1px solid var(--phos-dim);
     background: linear-gradient(180deg, rgba(61,255,136,0.07), rgba(6,10,7,0.9));
-    padding: 16px; margin: 14px 0 18px; position: relative;
+    padding: 16px; margin: 20px 0 12px; position: relative;
   }
   .header::before, .header::after {
     content:''; position:absolute; width: 14px; height: 14px;
@@ -235,13 +237,19 @@
     margin-bottom: 13px; letter-spacing: 0.05em;
   }
   .warn[hidden] { display: none; }
+
+
+  /* ===== desktop ===== phone layout below 900px is untouched ===== */
+  @media (min-width: 900px) {
+    .wrap { max-width: 1080px; column-count: 2; column-gap: 18px; }
+    .wrap > .header, .wrap > .backlink { column-span: all; }
+    .panel { break-inside: avoid; -webkit-column-break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
 <div class="hazard-bar"></div>
 <div class="wrap">
-
-  <a class="backlink" href="../">&larr; FAB CALCULATORS</a>
 
   <div class="header">
     <div class="wy">
@@ -251,6 +259,8 @@
     <h1>CUT NEST</h1>
     <p class="subtitle"><span class="blink">&#9608;</span> STOCK ALLOCATION / KERF COMPENSATED / REMNANT LOG</p>
   </div>
+
+  <a class="backlink" href="../">&larr; FAB CALCULATORS</a>
 
   <div class="panel">
     <div class="panel-title">Stock &amp; Saw</div>

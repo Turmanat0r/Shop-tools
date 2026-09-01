@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#01070c">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<title>CIRCUIT :: VOLTAGE DROP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #01070c;
+    --panel: #061a26;
+    --grid: rgba(0,229,255,0.07);
+    --cyan: #00e5ff;
+    --cyan-dim: #0a5c70;
+    --cyan-ghost: #05303c;
+    --orange: #ff9d00;
+    --red: #ff2f4a;
+    --lime: #6dff4d;
+    --text: #cbeaf2;
+    --muted: #5d8a99;
+    --dim: #3d5f6b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--void);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+      radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.10), transparent 65%);
+    background-size: 40px 40px, 40px 40px, 100% 100%;
+    color: var(--text);
+    font-family: 'Share Tech Mono', 'SFMono-Regular', 'Courier New', monospace;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap {
+    max-width: 700px; margin: 0 auto;
+    padding: calc(20px + env(safe-area-inset-top)) calc(13px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(13px + env(safe-area-inset-left));
+  }
+  .backlink {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 13px;
+    margin: -4px 0 16px; border: 1px solid var(--cyan-dim); color: var(--cyan);
+    text-decoration: none; font-size: 11px; letter-spacing: 0.18em;
+  }
+  .backlink:active { background: rgba(0,229,255,0.12); }
+
+  .header {
+    border: 1px solid var(--cyan);
+    background: linear-gradient(180deg, rgba(0,229,255,0.10), rgba(1,7,12,0.9));
+    padding: 17px 16px; margin-bottom: 18px; text-align: center;
+    box-shadow: 0 0 24px rgba(0,229,255,0.25), inset 0 0 34px rgba(0,229,255,0.06);
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  }
+  .co { font-family:'Orbitron',sans-serif; font-weight:700; font-size:10px; letter-spacing:0.34em; color:var(--orange); margin-bottom:9px; }
+  h1 { font-family:'Orbitron',sans-serif; font-weight:900; font-size:25px; margin:0; letter-spacing:0.13em; color:var(--cyan); text-shadow:0 0 20px rgba(0,229,255,0.8); }
+  .subtitle { font-size:12px; color:var(--dim); margin:10px 0 0; letter-spacing:0.16em; }
+
+  .panel {
+    background: linear-gradient(180deg, var(--panel), rgba(1,7,12,0.92));
+    border: 1px solid var(--cyan-dim);
+    padding: 15px; margin-bottom: 15px; position: relative;
+    box-shadow: inset 0 0 30px rgba(0,229,255,0.045);
+  }
+  .panel::before { content:''; position:absolute; top:0; left:0; width:40%; height:2px; background:linear-gradient(90deg,var(--cyan),transparent); }
+  .panel-title {
+    font-family:'Orbitron',sans-serif; font-weight:700; font-size:10px;
+    letter-spacing:0.26em; color:var(--cyan); text-transform:uppercase;
+    margin-bottom:14px; display:flex; align-items:center; gap:9px;
+  }
+  .panel-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--cyan-dim),transparent); }
+
+  label { display:block; font-size:10px; color:var(--dim); margin-bottom:5px; letter-spacing:0.18em; text-transform:uppercase; }
+  .field { margin-bottom:12px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .row3 { display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:8px; }
+
+  select, input[type=text] {
+    width:100%; background:rgba(1,7,12,0.9);
+    border:1px solid var(--cyan-dim); border-radius:0;
+    color:var(--cyan); padding:11px 9px; font-size:16px;
+    font-family:'Share Tech Mono',monospace; letter-spacing:0.05em;
+    outline:none; -webkit-appearance:none; appearance:none;
+  }
+  select {
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M0 0l6 8 6-8z' fill='%2300e5ff'/></svg>");
+    background-repeat:no-repeat; background-position:right 9px center; padding-right:27px;
+  }
+  select:focus { border-color:var(--cyan); box-shadow:0 0 12px rgba(0,229,255,0.4); }
+  select.hot {
+    border-color:var(--orange); color:var(--orange); background-color:rgba(255,157,0,0.07);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M0 0l6 8 6-8z' fill='%23ff9d00'/></svg>");
+  }
+  input[type=text] { font-size:14px; }
+
+  .tabs { display:flex; gap:8px; margin-bottom:13px; }
+  .tab {
+    flex:1; padding:10px 6px; cursor:pointer;
+    border:1px solid var(--cyan-dim); background:rgba(1,7,12,0.8);
+    color:var(--muted); font-size:10.5px; text-align:center;
+    letter-spacing:0.14em; text-transform:uppercase;
+    font-family:'Orbitron',sans-serif; font-weight:700;
+  }
+  .tab.active { border-color:var(--cyan); color:var(--cyan); background:rgba(0,229,255,0.10); box-shadow:0 0 14px rgba(0,229,255,0.25); }
+
+  .dev-card {
+    border:1px solid var(--cyan-ghost); border-left:3px solid var(--cyan);
+    padding:10px; margin-bottom:9px; background:rgba(1,7,12,0.55);
+  }
+  .dev-head { display:flex; gap:8px; align-items:flex-end; margin-bottom:9px; }
+  .dev-head > div:first-child { flex:1; }
+  .dev-foot { font-size:11px; color:var(--dim); margin-top:8px; border-top:1px dashed var(--cyan-ghost); padding-top:7px; letter-spacing:0.05em; }
+  .del-btn {
+    padding:9px 11px; border:1px solid var(--red); color:var(--red);
+    background:rgba(255,47,74,0.08); cursor:pointer; font-size:14px;
+    line-height:1; font-family:'Share Tech Mono',monospace; flex-shrink:0;
+  }
+  .add-btn {
+    width:100%; padding:11px; border:1px dashed var(--cyan);
+    background:transparent; color:var(--cyan); font-size:11px;
+    cursor:pointer; font-family:'Orbitron',sans-serif; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.2em;
+  }
+  .add-btn:active { background:var(--cyan); color:var(--void); }
+
+  .verdict {
+    border:1px solid var(--cyan); padding:16px; margin-bottom:14px;
+    background:rgba(1,7,12,0.85); text-align:center;
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  }
+  .verdict-label { font-family:'Orbitron',sans-serif; font-weight:700; font-size:10px; letter-spacing:0.28em; color:var(--dim); text-transform:uppercase; margin-bottom:10px; }
+  .verdict-num { font-family:'Orbitron',sans-serif; font-weight:900; font-size:44px; line-height:1; text-shadow:0 0 26px currentColor; }
+  .verdict-sub { font-size:13px; margin-top:11px; letter-spacing:0.14em; }
+
+  .trace-wrap { margin-bottom:14px; }
+  .trace-label { font-size:10px; color:var(--dim); letter-spacing:0.2em; text-transform:uppercase; margin-bottom:7px; display:flex; justify-content:space-between; }
+  .trace { height:26px; background:rgba(1,7,12,0.9); border:1px solid var(--cyan-dim); position:relative; overflow:hidden; }
+  .trace-fill { height:100%; width:0%; transition:width 0.18s, background 0.18s; box-shadow:0 0 18px currentColor; }
+  .trace-mark { position:absolute; top:0; bottom:0; width:2px; background:var(--orange); box-shadow:0 0 8px var(--orange); }
+  .trace-mark span { position:absolute; top:-1px; left:4px; font-size:9px; color:var(--orange); white-space:nowrap; letter-spacing:0.1em; }
+
+  .results { margin-top:4px; }
+  .result-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(0,229,255,0.13); gap:12px; }
+  .result-row:last-child { border-bottom:none; }
+  .result-label { font-size:12px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; }
+  .result-note { font-size:10.5px; color:var(--dim); margin-top:4px; letter-spacing:0.06em; }
+  .result-value { font-size:17px; color:var(--cyan); white-space:nowrap; text-shadow:0 0 10px rgba(0,229,255,0.4); }
+  .emph { background:linear-gradient(90deg, rgba(255,157,0,0.14), transparent); margin:0 -15px; padding:12px 15px; border-bottom:1px solid rgba(255,157,0,0.3); }
+  .emph .result-label { color:var(--orange); }
+  .emph .result-value { font-size:21px; color:var(--orange); text-shadow:0 0 14px rgba(255,157,0,0.6); }
+
+  .ok { color:var(--lime) !important; text-shadow:0 0 12px rgba(109,255,77,0.6) !important; }
+  .warn { color:var(--orange) !important; text-shadow:0 0 12px rgba(255,157,0,0.6) !important; }
+  .bad { color:var(--red) !important; text-shadow:0 0 12px rgba(255,47,74,0.6) !important; }
+
+  .alert { border:1px solid var(--red); background:rgba(255,47,74,0.1); color:#ff9aa8; padding:11px; font-size:12.5px; line-height:1.6; margin-bottom:13px; letter-spacing:0.05em; }
+  .okbox { border:1px solid var(--lime); background:rgba(109,255,77,0.08); color:#c2ffb3; padding:11px; font-size:12.5px; line-height:1.6; margin-bottom:13px; letter-spacing:0.05em; }
+  .note { color:var(--dim); font-size:11.5px; line-height:1.75; margin-top:14px; letter-spacing:0.03em; }
+
+  .ladder { display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:6px; }
+  .rung { border:1px solid var(--cyan-ghost); background:rgba(1,7,12,0.8); padding:8px 4px; text-align:center; font-size:12px; cursor:pointer; }
+  .rung .g { font-family:'Orbitron',sans-serif; font-weight:700; font-size:13px; }
+  .rung .p { font-size:10.5px; margin-top:4px; color:var(--dim); }
+  .rung.sel { border-color:var(--orange); background:rgba(255,157,0,0.09); }
+  .rung.pass .g { color:var(--lime); }
+  .rung.marg .g { color:var(--orange); }
+  .rung.fail .g { color:var(--red); }
+
+  .bigcount {
+    font-family:'Orbitron',sans-serif; font-weight:900; font-size:40px;
+    text-shadow:0 0 24px currentColor; line-height:1;
+  }
+
+
+  /* ===== desktop ===== phone layout below 900px is untouched ===== */
+  @media (min-width: 900px) {
+    .wrap { max-width: 1080px; column-count: 2; column-gap: 18px; }
+    .wrap > .header, .wrap > .backlink { column-span: all; }
+    .panel { break-inside: avoid; -webkit-column-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="co">Turmanator Ironworks</div>
+    <h1>VOLTAGE DROP</h1>
+    <p class="subtitle">CONDUCTOR &middot; FUSE &middot; GROUND SIZING</p>
+  </div>
+
+  <a class="backlink" href="../">&larr; SHOP SYSTEMS</a>
+
+  <!-- ===== LOAD BUILDER ===== -->
+  <div class="panel">
+    <div class="panel-title">Load Builder</div>
+    <div class="tabs" id="srctabs">
+      <div class="tab active" data-src="build">Build from devices</div>
+      <div class="tab" data-src="manual">Enter amps</div>
+    </div>
+
+    <div id="src-build">
+      <div id="devices"></div>
+      <div class="field" style="margin-top:12px; margin-bottom:10px;">
+        <label>Add device</label>
+        <select id="devpicker"></select>
+      </div>
+      <button class="add-btn" id="adddev">+ Add to circuit</button>
+
+      <div class="field" style="margin-top:14px; margin-bottom:0;">
+        <label>Wiring layout</label>
+        <select id="layout">
+          <option value="chain" selected>Daisy chained along the run</option>
+          <option value="end">All at the far end</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="src-manual" style="display:none;">
+      <div class="field" style="margin-bottom:0;">
+        <label>Load current</label>
+        <select class="hot" id="amps"></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CIRCUIT ===== -->
+  <div class="panel">
+    <div class="panel-title">Circuit</div>
+    <div class="row2">
+      <div class="field">
+        <label>System voltage</label>
+        <select class="hot" id="volts">
+          <option value="12" selected>12 V DC</option>
+          <option value="24">24 V DC</option>
+          <option value="48">48 V DC</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Run length (one way)</label>
+        <select class="hot" id="len"></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Wire gauge</label>
+        <select class="hot" id="gauge"></select>
+      </div>
+      <div class="field">
+        <label>Fuse / breaker</label>
+        <select class="hot" id="fuse"></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field" style="margin-bottom:0;">
+        <label>Conductor</label>
+        <select id="mat">
+          <option value="1" selected>Copper</option>
+          <option value="1.61">Aluminum</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>Drop limit</label>
+        <select id="limit">
+          <option value="3" selected>3% &mdash; critical</option>
+          <option value="5">5% &mdash; general</option>
+          <option value="10">10% &mdash; non-critical</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RESULT ===== -->
+  <div class="panel">
+    <div class="panel-title">Result</div>
+    <div id="alertbox"></div>
+
+    <div class="verdict">
+      <div class="verdict-label">Voltage Drop</div>
+      <div class="verdict-num" id="v-pct">&mdash;</div>
+      <div class="verdict-sub" id="v-status"></div>
+    </div>
+
+    <div class="trace-wrap">
+      <div class="trace-label"><span>0%</span><span id="t-scale">10%</span></div>
+      <div class="trace" id="trace">
+        <div class="trace-fill" id="t-fill"></div>
+        <div class="trace-mark" id="t-mark"><span id="t-marklbl"></span></div>
+      </div>
+    </div>
+
+    <div class="results">
+      <div class="result-row emph">
+        <span><span class="result-label">Smallest gauge that works</span><div class="result-note" id="r-recnote"></div></span>
+        <span class="result-value" id="r-rec">&mdash;</span>
+      </div>
+      <div class="result-row"><span><span class="result-label">Total load</span><div class="result-note" id="r-loadnote"></div></span><span class="result-value" id="r-load">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Drop in volts</span><span class="result-value" id="r-vd">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Voltage at last device</span><span class="result-value" id="r-vl">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Ampacity of this gauge</span><div class="result-note" id="r-ampnote"></div></span><span class="result-value" id="r-amp">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Circuit resistance</span><div class="result-note" id="r-resnote">feed + ground, round trip</div></span><span class="result-value" id="r-res">&mdash;</span></div>
+      <div class="result-row"><span class="result-label">Power lost as heat</span><span class="result-value" id="r-pw">&mdash;</span></div>
+    </div>
+  </div>
+
+  <!-- ===== FUSE ===== -->
+  <div class="panel">
+    <div class="panel-title">Fuse Check</div>
+    <div id="fusebox"></div>
+    <div class="results">
+      <div class="result-row emph">
+        <span><span class="result-label">Will it hold?</span><div class="result-note" id="f-holdnote"></div></span>
+        <span class="result-value" id="f-hold">&mdash;</span>
+      </div>
+      <div class="result-row"><span><span class="result-label">Continuous load on fuse</span><div class="result-note">80% is the usual working ceiling</div></span><span class="result-value" id="f-pct">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Does it protect the wire?</span><div class="result-note" id="f-wirenote"></div></span><span class="result-value" id="f-wire">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Headroom before it blows</span><div class="result-note">amps you can still add</div></span><span class="result-value" id="f-head">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Devices you could still add</span><div class="result-note" id="f-morenote"></div></span><span class="result-value" id="f-more">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Largest fuse this wire allows</span><div class="result-note">fuse protects the wire, not the load</div></span><span class="result-value" id="f-max">&mdash;</span></div>
+    </div>
+    <p class="note">A fuse protects the <strong>wire</strong>, not the device. It has to be equal to or smaller than the wire's ampacity, and comfortably larger than the continuous load. LED drivers pull a brief inrush surge at switch-on that a fast-blow fuse sitting right at the load current can nuisance-trip on &mdash; that's why the 80% rule exists.</p>
+  </div>
+
+  <!-- ===== GROUND ===== -->
+  <div class="panel">
+    <div class="panel-title">Ground / Return Path</div>
+    <div class="row2">
+      <div class="field">
+        <label>Ground wire gauge</label>
+        <select class="hot" id="ggauge"></select>
+      </div>
+      <div class="field">
+        <label>Ground run length</label>
+        <select class="hot" id="glen"></select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label>Ground scheme</label>
+      <select id="gscheme">
+        <option value="shared" selected>One shared ground for all devices</option>
+        <option value="each">Each device grounded separately</option>
+      </select>
+    </div>
+
+    <div class="verdict">
+      <div class="verdict-label" id="g-caplabel">Devices per shared ground</div>
+      <div class="bigcount" id="g-cap">&mdash;</div>
+      <div class="verdict-sub" id="g-capsub"></div>
+    </div>
+
+    <div class="results">
+      <div class="result-row"><span><span class="result-label">Current on this ground</span><div class="result-note" id="g-inote"></div></span><span class="result-value" id="g-i">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Ground ampacity</span><div class="result-note" id="g-ampnote"></div></span><span class="result-value" id="g-amp">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Drop in the ground leg</span><div class="result-note">included in the total drop above</div></span><span class="result-value" id="g-vd">&mdash;</span></div>
+      <div class="result-row"><span><span class="result-label">Limited by</span><div class="result-note">whichever runs out first</div></span><span class="result-value" id="g-limit">&mdash;</span></div>
+    </div>
+    <p class="note">A shared ground carries every device's current at once, so it has to be sized for the <strong>sum</strong>, not for one pod. Undersized grounds are the most common cause of dim, flickering, or oddly-behaving lights &mdash; the power side gets sized carefully and the return gets whatever scrap was on the bench. Run the ground at least as heavy as the feed. A bolted chassis ground only works if the paint is off and the joint stays clean; if there's any doubt, run a real wire back to the battery negative.</p>
+  </div>
+
+  <!-- ===== LADDER ===== -->
+  <div class="panel">
+    <div class="panel-title">Gauge Ladder &mdash; tap to select</div>
+    <div class="ladder" id="ladder"></div>
+    <p class="note">Green clears your drop limit and has the ampacity. Amber carries the current but exceeds the drop limit. Red is under-rated for the current &mdash; don't run it.<br><br>Resistance is <strong>solid copper at 20&deg;C</strong>, matching the AWG standard to better than 0.05%. Stranded runs about 2% higher and warm wire higher again, so treat the drop as a floor and leave margin. Ampacity follows ABYC-style DC values outside an engine space with up to three bundled conductors &mdash; derate for engine bays, big bundles, or high ambient.</p>
+  </div>
+</div>
+
+<script>
+/* ===== wire table: ohms/1000ft, DC ampacity ===== */
+var AWG = [
+  { g:'22',  r:16.14,  a:5   },
+  { g:'20',  r:10.15,  a:7   },
+  { g:'18',  r:6.385,  a:10  },
+  { g:'16',  r:4.016,  a:15  },
+  { g:'14',  r:2.525,  a:20  },
+  { g:'12',  r:1.588,  a:25  },
+  { g:'10',  r:0.9989, a:40  },
+  { g:'8',   r:0.6282, a:55  },
+  { g:'6',   r:0.3951, a:80  },
+  { g:'4',   r:0.2485, a:105 },
+  { g:'2',   r:0.1563, a:140 },
+  { g:'1',   r:0.1239, a:165 },
+  { g:'1/0', r:0.0983, a:195 },
+  { g:'2/0', r:0.0779, a:225 },
+  { g:'3/0', r:0.0618, a:260 },
+  { g:'4/0', r:0.0490, a:300 }
+];
+var FUSES=[1,2,3,5,7.5,10,15,20,25,30,35,40,50,60,70,80,100,125,150,175,200,250,300];
+function fmt(n,d){ if(!isFinite(n)) return '\u2014'; return n.toFixed(d); }
+
+/* ===== device catalog: watts each ===== */
+var DEVICES=[
+  { key:'pod3',    label:'LED pod \u2014 small (3 W)',    w:3   },
+  { key:'pod10',   label:'LED pod \u2014 med (10 W)',     w:10  },
+  { key:'pod20',   label:'LED pod \u2014 large (20 W)',   w:20  },
+  { key:'rock',    label:'Rock light (3 W)',              w:3   },
+  { key:'strip',   label:'LED strip, per ft (1.5 W)',     w:1.5 },
+  { key:'marker',  label:'Marker / clearance (0.5 W)',    w:0.5 },
+  { key:'dome',    label:'Dome / interior (5 W)',         w:5   },
+  { key:'bar20',   label:'Light bar 20" (90 W)',          w:90  },
+  { key:'bar32',   label:'Light bar 32" (180 W)',         w:180 },
+  { key:'work',    label:'Work light (27 W)',             w:27  },
+  { key:'scene',   label:'Scene light (48 W)',            w:48  },
+  { key:'fan',     label:'Vent fan (30 W)',               w:30  },
+  { key:'pump',    label:'Water pump (60 W)',             w:60  },
+  { key:'fridge',  label:'12V fridge (55 W)',             w:55  },
+  { key:'usb',     label:'USB charge port (24 W)',        w:24  },
+  { key:'custom',  label:'Custom device',                 w:15  }
+];
+function devOf(k){ for(var i=0;i<DEVICES.length;i++) if(DEVICES[i].key===k) return DEVICES[i]; return DEVICES[DEVICES.length-1]; }
+
+/* ===== wheels ===== */
+var AMPS=[]; (function(){
+  for (var a=1;a<20;a++) AMPS.push(a);
+  for (var b=20;b<100;b+=5) AMPS.push(b);
+  for (var c=100;c<=400;c+=10) AMPS.push(c);
+})();
+var LENS=[]; (function(){
+  for (var l=1;l<=30;l++) LENS.push(l);
+  for (var m=35;m<=100;m+=5) LENS.push(m);
+  for (var n=110;n<=250;n+=10) LENS.push(n);
+})();
+var WATTS=[]; (function(){
+  for (var w=0.5;w<10;w+=0.5) WATTS.push(w);
+  for (var x=10;x<60;x+=1) WATTS.push(x);
+  for (var y=60;y<=500;y+=5) WATTS.push(y);
+})();
+var QTYS=[]; for (var q=1;q<=60;q++) QTYS.push(q);
+
+function fillSelect(sel, vals, chosen, suffix){
+  sel.innerHTML='';
+  var nearest=vals[0], best=Infinity;
+  for (var i=0;i<vals.length;i++){
+    var o=document.createElement('option');
+    o.value=vals[i]; o.textContent=vals[i]+(suffix||'');
+    sel.appendChild(o);
+    var d=Math.abs(vals[i]-chosen);
+    if (d<best){best=d;nearest=vals[i];}
+  }
+  sel.value=nearest;
+}
+
+/* ===== state ===== */
+var srcMode='build';
+var items=[ { key:'pod20', w:20, qty:6 } ];
+
+/* device picker */
+(function(){
+  var p=document.getElementById('devpicker');
+  for (var i=0;i<DEVICES.length;i++){
+    var o=document.createElement('option');
+    o.value=DEVICES[i].key; o.textContent=DEVICES[i].label;
+    p.appendChild(o);
+  }
+  p.value='pod10';
+})();
+document.getElementById('adddev').addEventListener('click', function(){
+  var k=document.getElementById('devpicker').value;
+  items.push({ key:k, w:devOf(k).w, qty:2 });
+  renderDevices(); calc();
+});
+
+function renderDevices(){
+  var host=document.getElementById('devices');
+  host.innerHTML='';
+  var V=parseFloat(document.getElementById('volts').value)||12;
+  for (var i=0;i<items.length;i++){
+    (function(idx){
+      var card=document.createElement('div');
+      card.className='dev-card';
+
+      var head=document.createElement('div'); head.className='dev-head';
+      var f0=document.createElement('div');
+      f0.innerHTML='<label>Device</label>';
+      var s0=document.createElement('select');
+      for (var k=0;k<DEVICES.length;k++){
+        var o=document.createElement('option');
+        o.value=DEVICES[k].key; o.textContent=DEVICES[k].label;
+        s0.appendChild(o);
+      }
+      s0.value=items[idx].key;
+      s0.addEventListener('change', function(){
+        items[idx].key=this.value; items[idx].w=devOf(this.value).w;
+        renderDevices(); calc();
+      });
+      f0.appendChild(s0);
+      var del=document.createElement('div');
+      del.className='del-btn'; del.textContent='\u2715';
+      if (items.length<=1) del.style.opacity='0.3';
+      del.addEventListener('click', function(){
+        if (items.length<=1) return;
+        items.splice(idx,1); renderDevices(); calc();
+      });
+      head.appendChild(f0); head.appendChild(del);
+      card.appendChild(head);
+
+      var row=document.createElement('div'); row.className='row2';
+      var f1=document.createElement('div');
+      f1.innerHTML='<label>Watts each</label>';
+      var s1=document.createElement('select'); s1.className='hot';
+      fillSelect(s1, WATTS, items[idx].w, ' W');
+      s1.addEventListener('change', function(){ items[idx].w=parseFloat(this.value); renderDevices(); calc(); });
+      f1.appendChild(s1);
+      var f2=document.createElement('div');
+      f2.innerHTML='<label>Quantity</label>';
+      var s2=document.createElement('select'); s2.className='hot';
+      fillSelect(s2, QTYS, items[idx].qty);
+      s2.addEventListener('change', function(){ var v=parseInt(this.value,10); if(!isFinite(v))return; items[idx].qty=v; renderDevices(); calc(); });
+      f2.appendChild(s2);
+      row.appendChild(f1); row.appendChild(f2);
+      card.appendChild(row);
+
+      var foot=document.createElement('div'); foot.className='dev-foot';
+      var tw=items[idx].w*items[idx].qty;
+      foot.textContent='\u25B8 '+items[idx].qty+' \u00d7 '+items[idx].w+' W = '+fmt(tw,1)+
+        ' W  \u2022  '+fmt(tw/V,2)+' A  \u2022  '+fmt(items[idx].w/V,2)+' A each';
+      card.appendChild(foot);
+
+      host.appendChild(card);
+    })(i);
+  }
+}
+
+/* source tabs */
+var stabs=document.getElementById('srctabs').children;
+for (var t=0;t<stabs.length;t++){
+  (function(el){
+    el.addEventListener('click', function(){
+      srcMode=el.dataset.src;
+      for (var j=0;j<stabs.length;j++) stabs[j].classList.toggle('active', stabs[j].dataset.src===srcMode);
+      document.getElementById('src-build').style.display  = (srcMode==='build')?'block':'none';
+      document.getElementById('src-manual').style.display = (srcMode==='manual')?'block':'none';
+      calc();
+    });
+  })(stabs[t]);
+}
+
+/* fill wheels */
+fillSelect(document.getElementById('amps'), AMPS, 20, ' A');
+fillSelect(document.getElementById('len'), LENS, 20, ' ft');
+fillSelect(document.getElementById('glen'), LENS, 20, ' ft');
+(function(){
+  var g=document.getElementById('gauge'), gg=document.getElementById('ggauge');
+  for (var i=0;i<AWG.length;i++){
+    var o=document.createElement('option');
+    o.value=i; o.textContent='#'+AWG[i].g+'  ['+AWG[i].a+' A max]';
+    g.appendChild(o);
+    var o2=o.cloneNode(true); gg.appendChild(o2);
+  }
+  g.value=6; gg.value=6;
+})();
+(function(){
+  var f=document.getElementById('fuse');
+  for (var i=0;i<FUSES.length;i++){
+    var o=document.createElement('option');
+    o.value=FUSES[i]; o.textContent=FUSES[i]+' A';
+    f.appendChild(o);
+  }
+  f.value=20;
+})();
+
+/* ===== math ===== */
+function perDeviceAmps(){
+  var V=parseFloat(document.getElementById('volts').value)||12;
+  var l=totalLoad(V);
+  return l.perA||0;
+}
+function totalLoad(V){
+  if (srcMode==='manual'){
+    var I=parseFloat(document.getElementById('amps').value)||0;
+    return { I:I, W:I*V, n:1, perA:I };
+  }
+  var W=0, n=0;
+  for (var i=0;i<items.length;i++){ W+=items[i].w*items[i].qty; n+=items[i].qty; }
+  var I=W/V;
+  return { I:I, W:W, n:n, perA: n? I/n : I };
+}
+function chainFactor(n){
+  if (srcMode==='manual') return 1;
+  if (document.getElementById('layout').value==='end') return 1;
+  return n>0 ? (n+1)/(2*n) : 1;
+}
+/* Feed leg and return leg are separate conductors. The old model charged
+   2*L at the FEED gauge for both, so changing the ground gauge or length
+   moved the ground readout but never the total -- with a ground two sizes
+   down that understated the real drop by 76%. Now the return is whatever
+   the ground panel actually says it is. When ground == feed, 1*L + 1*L
+   reduces to the old 2*L exactly. */
+function groundLeg(){
+  var ggi=parseInt(document.getElementById('ggauge').value,10);
+  var gL=parseFloat(document.getElementById('glen').value);
+  var mat=parseFloat(document.getElementById('mat').value);
+  return { idx:ggi, L:gL, r:AWG[ggi].r/1000*mat, amp:AWG[ggi].a,
+           shared:document.getElementById('gscheme').value==='shared' };
+}
+function dropFor(idx, V, I, L, mat, cf){
+  var rf=AWG[idx].r/1000*mat;
+  var g=groundLeg();
+  var feedVd=I*L*rf*cf;
+  // A shared ground carries the whole load and tapers like the feed. Separate
+  // grounds each carry one device's share over the full length.
+  var gndI = g.shared ? I : perDeviceAmps();
+  var gndVd = gndI*g.L*g.r*(g.shared?cf:1);
+  var vd=feedVd+gndVd;
+  return { R:L*rf+g.L*g.r, vd:vd, feedVd:feedVd, gndVd:gndVd, pct:100*vd/V };
+}
+
+function calc(){
+  var V=parseFloat(document.getElementById('volts').value);
+  var L=parseFloat(document.getElementById('len').value);
+  var gi=parseInt(document.getElementById('gauge').value,10);
+  var mat=parseFloat(document.getElementById('mat').value);
+  var lim=parseFloat(document.getElementById('limit').value);
+  var fuse=parseFloat(document.getElementById('fuse').value);
+
+  var load=totalLoad(V);
+  var I=load.I;
+  var cf=chainFactor(load.n);
+  var d=dropFor(gi,V,I,L,mat,cf);
+  var amp=AWG[gi].a;
+  var overAmp = I>amp;
+
+  /* verdict */
+  var pctEl=document.getElementById('v-pct'), stEl=document.getElementById('v-status');
+  pctEl.textContent=fmt(d.pct,2)+'%';
+  var cls = d.pct<=lim ? 'ok' : (d.pct<=lim*1.7 ? 'warn' : 'bad');
+  pctEl.className='verdict-num '+cls;
+  stEl.className='verdict-sub '+cls;
+  stEl.textContent=(d.pct<=lim?'WITHIN ':'EXCEEDS ')+lim+'% LIMIT';
+
+  document.getElementById('alertbox').innerHTML = overAmp
+    ? '<div class="alert"><strong>OVER AMPACITY.</strong> #'+AWG[gi].g+' is rated '+amp+
+      ' A; the load draws '+fmt(I,1)+' A. Fire risk regardless of voltage drop \u2014 go up in gauge.</div>' : '';
+
+  /* trace */
+  var scale=Math.max(10, lim*2, Math.ceil(d.pct*1.2));
+  document.getElementById('t-scale').textContent=scale+'%';
+  var fill=document.getElementById('t-fill');
+  fill.style.width=Math.min(100,100*d.pct/scale)+'%';
+  var col=d.pct<=lim?'#6dff4d':(d.pct<=lim*1.7?'#ff9d00':'#ff2f4a');
+  fill.style.background=col; fill.style.color=col;
+  document.getElementById('t-mark').style.left=(100*lim/scale)+'%';
+  document.getElementById('t-marklbl').textContent=lim+'%';
+
+  /* recommendation */
+  var rec=null;
+  for (var i=0;i<AWG.length;i++){
+    if (AWG[i].a<I) continue;
+    if (dropFor(i,V,I,L,mat,cf).pct<=lim){ rec=i; break; }
+  }
+  var recEl=document.getElementById('r-rec');
+  if (rec===null){
+    recEl.textContent='> 4/0'; recEl.className='result-value bad';
+    document.getElementById('r-recnote').textContent='nothing in the table does it \u2014 shorten the run or split the circuit';
+  } else {
+    recEl.textContent='#'+AWG[rec].g; recEl.className='result-value';
+    var rd=dropFor(rec,V,I,L,mat,cf);
+    document.getElementById('r-recnote').textContent=
+      fmt(rd.pct,2)+'% drop \u00b7 '+AWG[rec].a+' A rated'+(rec===gi?' \u00b7 what you picked':'');
+  }
+
+  document.getElementById('r-load').textContent=fmt(I,2)+' A';
+  document.getElementById('r-loadnote').textContent = srcMode==='manual'
+    ? 'entered directly'
+    : load.n+' device'+(load.n===1?'':'s')+' \u00b7 '+fmt(load.W,1)+' W \u00b7 '+
+      (cf<1 ? 'daisy chained (\u00d7'+fmt(cf,2)+' drop factor)' : 'all at far end');
+
+  document.getElementById('r-vd').textContent=fmt(d.vd,3)+' V';
+  document.getElementById('r-vl').textContent=fmt(V-d.vd,2)+' V';
+  var ampEl=document.getElementById('r-amp');
+  ampEl.textContent=amp+' A';
+  ampEl.className='result-value '+(overAmp?'bad':'ok');
+  document.getElementById('r-ampnote').textContent = overAmp
+    ? 'load exceeds it by '+fmt(I-amp,1)+' A' : fmt(100*I/amp,0)+'% loaded';
+  document.getElementById('r-res').textContent=fmt(d.R,4)+' \u03a9';
+  document.getElementById('r-resnote').textContent='feed '+fmt(d.feedVd,3)+' V + ground '+fmt(d.gndVd,3)+' V';
+  document.getElementById('r-pw').textContent=fmt(d.vd*I,1)+' W';
+
+  /* ===== FUSE ===== */
+  var pctFuse = 100*I/fuse;
+  var holdEl=document.getElementById('f-hold'), fb=document.getElementById('fusebox');
+  var verdict, hcls, hnote;
+  if (I>=fuse){ verdict='NO \u2014 WILL BLOW'; hcls='bad'; hnote='load is at or over the fuse rating'; }
+  else if (pctFuse>80){ verdict='RISKY'; hcls='warn'; hnote='over the 80% working ceiling \u2014 may nuisance-trip on inrush'; }
+  else { verdict='YES \u2014 HOLDS'; hcls='ok'; hnote='comfortably under the 80% ceiling'; }
+  holdEl.textContent=verdict; holdEl.className='result-value '+hcls;
+  document.getElementById('f-holdnote').textContent=hnote;
+
+  var pctEl2=document.getElementById('f-pct');
+  pctEl2.textContent=fmt(pctFuse,0)+'%';
+  pctEl2.className='result-value '+(pctFuse>100?'bad':(pctFuse>80?'warn':'ok'));
+
+  var protects = fuse<=amp;
+  var wEl=document.getElementById('f-wire');
+  wEl.textContent = protects?'YES':'NO';
+  wEl.className='result-value '+(protects?'ok':'bad');
+  document.getElementById('f-wirenote').textContent = protects
+    ? fuse+' A fuse on '+amp+' A wire' : fuse+' A fuse on '+amp+' A wire \u2014 wire cooks before the fuse blows';
+
+  var head=fuse*0.8-I;
+  var hEl=document.getElementById('f-head');
+  hEl.textContent=(head>=0?'+':'')+fmt(head,2)+' A';
+  hEl.className='result-value '+(head>0?'ok':'bad');
+
+  var perA=load.perA||0;
+  var more = (perA>0) ? Math.floor(head/perA) : 0;
+  if (more<0) more=0;
+  var mEl=document.getElementById('f-more');
+  mEl.textContent = perA>0 ? String(more) : '\u2014';
+  mEl.className='result-value '+(more>0?'ok':'warn');
+  document.getElementById('f-morenote').textContent = perA>0
+    ? 'more at '+fmt(perA,2)+' A each, staying under 80%' : 'set a device load to size this';
+
+  var maxFuse=0;
+  for (var q=0;q<FUSES.length;q++) if (FUSES[q]<=amp) maxFuse=FUSES[q];
+  document.getElementById('f-max').textContent=maxFuse+' A';
+
+  /* ===== GROUND ===== */
+  var ggi=parseInt(document.getElementById('ggauge').value,10);
+  var gL=parseFloat(document.getElementById('glen').value);
+  var shared = document.getElementById('gscheme').value==='shared';
+  var gr=AWG[ggi].r/1000*mat;
+  var gAmp=AWG[ggi].a;
+  var gI = shared ? I : perA;
+  var gVd = d.gndVd;
+
+  document.getElementById('g-i').textContent=fmt(gI,2)+' A';
+  document.getElementById('g-inote').textContent = shared
+    ? 'all '+load.n+' device'+(load.n===1?'':'s')+' return through it'
+    : 'one device per ground wire';
+  var gaEl=document.getElementById('g-amp');
+  gaEl.textContent=gAmp+' A';
+  gaEl.className='result-value '+(gI>gAmp?'bad':'ok');
+  document.getElementById('g-ampnote').textContent=fmt(100*gI/gAmp,0)+'% loaded';
+  document.getElementById('g-vd').textContent=fmt(gVd,3)+' V';
+
+  // how many devices can share this ground
+  var capEl=document.getElementById('g-cap'), capSub=document.getElementById('g-capsub');
+  var lbl=document.getElementById('g-caplabel');
+  if (perA<=0){
+    capEl.textContent='\u2014'; capSub.textContent=''; 
+    document.getElementById('g-limit').textContent='\u2014';
+  } else if (!shared){
+    lbl.textContent='Devices per ground wire';
+    capEl.textContent='1';
+    capEl.className='bigcount ok';
+    capSub.textContent='separate ground per device \u2014 no sharing';
+    capSub.className='verdict-sub ok';
+    document.getElementById('g-limit').textContent='by design';
+  } else {
+    lbl.textContent='Devices per shared ground';
+    var byAmp=Math.floor(gAmp/perA);
+    var budgetV=(lim/100)*V;
+    // k devices draw k*perA. Chained, k*cf(k) = (k+1)/2; all-at-end it is k.
+    // Both legs carry it, so: perA * shape(k) * (L*rFeed + gL*rGnd) <= budget.
+    var rFeed=AWG[gi].r/1000*mat;
+    var legs=L*rFeed + gL*gr;
+    var chained = srcMode!=='manual' && document.getElementById('layout').value!=='end';
+    var byDrop = legs>0
+      ? Math.floor(chained ? (2*budgetV/(perA*legs) - 1) : (budgetV/(perA*legs)))
+      : Infinity;
+    var cap=Math.min(byAmp,byDrop);
+    if (cap<0) cap=0;
+    capEl.textContent=String(cap);
+    capEl.className='bigcount '+(load.n<=cap?'ok':'bad');
+    capSub.textContent = load.n<=cap
+      ? 'you have '+load.n+' \u2014 room for '+(cap-load.n)+' more'
+      : 'you have '+load.n+' \u2014 that is '+(load.n-cap)+' too many';
+    capSub.className='verdict-sub '+(load.n<=cap?'ok':'bad');
+    document.getElementById('g-limit').textContent = (byAmp<byDrop)?'ampacity':'voltage drop';
+  }
+
+  /* ===== ladder ===== */
+  var lad=document.getElementById('ladder');
+  lad.innerHTML='';
+  for (var k=0;k<AWG.length;k++){
+    (function(idx){
+      var dd=dropFor(idx,V,I,L,mat,cf);
+      var cell=document.createElement('div');
+      var st = AWG[idx].a<I ? 'fail' : (dd.pct<=lim?'pass':'marg');
+      cell.className='rung '+st+(idx===gi?' sel':'');
+      cell.innerHTML='<div class="g">#'+AWG[idx].g+'</div><div class="p">'+fmt(dd.pct,1)+'%</div>';
+      cell.addEventListener('click', function(){
+        document.getElementById('gauge').value=idx; calc();
+      });
+      lad.appendChild(cell);
+    })(k);
+  }
+}
+
+var ids=['volts','amps','len','gauge','mat','limit','fuse','layout','ggauge','glen','gscheme'];
+for (var i=0;i<ids.length;i++)
+  document.getElementById(ids[i]).addEventListener('change', function(){
+    if (this.id==='volts') renderDevices();
+    calc();
+  });
+
+renderDevices();
+calc();
+</script>
+</body>
+</html>

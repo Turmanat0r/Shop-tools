@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<title>Conversion Circuits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dash: #0a0a0c;
+    --panel: #141416;
+    --panel-2: #1c1c20;
+    --chrome: #8f959c;
+    --chrome-dk: #4a4e54;
+    --rivet: #6b7178;
+    --red: #ff2d20;
+    --red-dim: #3a0a06;
+    --grn: #35ff5c;
+    --grn-dim: #063a10;
+    --amb: #ffae00;
+    --amb-dim: #3a2600;
+    --text: #d8dade;
+    --muted: #8a9098;
+    --dim: #5a6068;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--dash);
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.014) 0 1px, transparent 1px 3px),
+      radial-gradient(ellipse at 50% -10%, rgba(255,174,0,0.06), transparent 60%);
+    color: var(--text);
+    font-family: 'Share Tech Mono', 'SFMono-Regular', 'Courier New', monospace;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap {
+    max-width: 700px; margin: 0 auto;
+    padding: calc(20px + env(safe-area-inset-top)) calc(13px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(13px + env(safe-area-inset-left));
+  }
+  .backlink {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 13px;
+    margin: -4px 0 16px; border: 1px solid var(--chrome-dk); color: var(--amb);
+    text-decoration: none; font-size: 11px; letter-spacing: 0.18em;
+  }
+  .backlink:active { background: rgba(255,174,0,0.12); }
+
+  /* ---- dash header ---- */
+  .header {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 2px solid var(--chrome-dk);
+    border-radius: 6px; padding: 15px 16px; margin-bottom: 18px;
+    text-align: center; position: relative;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 5px 22px rgba(0,0,0,0.65);
+  }
+  .rivets { position:absolute; inset:6px; pointer-events:none; }
+  .rivet {
+    position:absolute; width:5px; height:5px; border-radius:50%;
+    background: radial-gradient(circle at 35% 35%, #b9c0c7, #3d4249);
+  }
+  .co {
+    font-family:'Orbitron',sans-serif; font-weight:700;
+    font-size: 10px; letter-spacing: 0.32em; color: var(--amb);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family:'Orbitron',sans-serif; font-weight:900;
+    font-size: 23px; margin: 0; letter-spacing: 0.1em; color: var(--text);
+    text-shadow: 0 0 16px rgba(255,174,0,0.35);
+  }
+  .subtitle { font-size: 12px; color: var(--muted); margin: 9px 0 0; letter-spacing: 0.1em; }
+
+  /* ---- circuit rows ---- */
+  .circuit {
+    background: #08080a;
+    border: 2px solid var(--chrome-dk);
+    border-radius: 5px; padding: 12px 13px; margin-bottom: 12px;
+    box-shadow: inset 0 0 26px rgba(0,0,0,0.9), 0 2px 10px rgba(0,0,0,0.5);
+  }
+  .circuit-label {
+    font-family:'Orbitron',sans-serif; font-weight:700;
+    font-size: 9.5px; letter-spacing: 0.26em;
+    text-transform: uppercase; margin-bottom: 9px;
+  }
+  .lcd {
+    background: #000; border: 1px solid #26262a; border-radius: 3px;
+    padding: 12px 10px; text-align: center; position: relative; overflow: hidden;
+  }
+  .lcd::after {
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background: repeating-linear-gradient(to bottom,
+      rgba(0,0,0,0.30) 0 1px, transparent 1px 3px);
+  }
+  .lcd-val {
+    font-family:'Orbitron',sans-serif; font-weight:900;
+    font-size: 34px; line-height: 1.1; letter-spacing: 0.06em;
+    text-shadow: 0 0 18px currentColor, 0 0 40px currentColor;
+    word-break: break-word;
+  }
+  .lcd-unit { font-size: 11px; letter-spacing: 0.24em; margin-top: 6px; opacity: 0.65; }
+  .c-red   .circuit-label { color: var(--red); }
+  .c-red   .lcd-val, .c-red .lcd-unit { color: var(--red); }
+  .c-red   .lcd { box-shadow: inset 0 0 30px rgba(255,45,32,0.10); }
+  .c-green .circuit-label { color: var(--grn); }
+  .c-green .lcd-val, .c-green .lcd-unit { color: var(--grn); }
+  .c-green .lcd { box-shadow: inset 0 0 30px rgba(53,255,92,0.10); }
+  .c-amber .circuit-label { color: var(--amb); }
+  .c-amber .lcd-val, .c-amber .lcd-unit { color: var(--amb); }
+  .c-amber .lcd { box-shadow: inset 0 0 30px rgba(255,174,0,0.10); }
+
+  /* ---- input console ---- */
+  .console {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 2px solid var(--chrome-dk); border-radius: 6px;
+    padding: 15px; margin-bottom: 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .console-title {
+    font-family:'Orbitron',sans-serif; font-weight:700;
+    font-size: 10px; letter-spacing: 0.24em; color: var(--amb);
+    text-transform: uppercase; margin-bottom: 13px;
+    border-bottom: 1px solid #2a2a2e; padding-bottom: 8px;
+  }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tab {
+    flex: 1; padding: 11px 6px; border-radius: 4px; cursor: pointer;
+    border: 1px solid var(--chrome-dk); background: #101014;
+    color: var(--muted); font-size: 11px; text-align: center;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    font-family:'Orbitron',sans-serif; font-weight:700;
+  }
+  .tab.active { border-color: var(--amb); color: var(--amb); background: rgba(255,174,0,0.10); }
+
+  label {
+    display: block; font-size: 10px; color: var(--muted);
+    margin-bottom: 5px; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .field { margin-bottom: 12px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; }
+
+  input[type=number], select {
+    width: 100%; background: #08080a;
+    border: 1px solid var(--chrome-dk); border-radius: 3px;
+    color: var(--amb); padding: 12px 10px; font-size: 19px;
+    font-family: 'Share Tech Mono', monospace; outline: none;
+    -webkit-appearance: none; appearance: none; text-align: center;
+  }
+  input[type=number]:focus { border-color: var(--amb); box-shadow: 0 0 0 1px var(--amb); }
+  select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M0 0l6 8 6-8z' fill='%23ffae00'/></svg>");
+    background-repeat: no-repeat; background-position: right 9px center;
+    padding-right: 26px; text-align: left;
+  }
+
+  /* ---- readout strip ---- */
+  .strip {
+    background: #08080a; border: 1px solid #26262a; border-radius: 4px;
+    padding: 12px; margin-bottom: 16px;
+  }
+  .strip-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #1a1a1e; gap: 12px; font-size: 13px;
+  }
+  .strip-row:last-child { border-bottom: none; }
+  .strip-label { color: var(--muted); letter-spacing: 0.08em; }
+  .strip-val { color: var(--text); white-space: nowrap; }
+  .ok { color: var(--grn); }
+  .off { color: var(--red); }
+
+  /* ---- tape reference ---- */
+  .tape {
+    background: #0d0d10; border: 1px solid #26262a; border-radius: 4px;
+    padding: 12px; margin-top: 4px;
+  }
+  .tape-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(94px, 1fr)); gap: 6px;
+  }
+  .tape-cell {
+    background: #08080a; border: 1px solid #1f1f24; border-radius: 3px;
+    padding: 7px 5px; text-align: center; font-size: 12px; cursor: pointer;
+  }
+  .tape-cell:active { border-color: var(--amb); }
+  .tape-frac { color: var(--grn); }
+  .tape-dec { color: var(--dim); font-size: 11px; margin-top: 3px; }
+
+  .note { color: var(--dim); font-size: 11.5px; line-height: 1.7; margin-top: 13px; }
+
+
+  /* ===== desktop ===== phone layout below 900px is untouched ===== */
+  @media (min-width: 900px) {
+    .wrap { max-width: 1080px; column-count: 2; column-gap: 18px; }
+    .wrap > .header, .wrap > .backlink { column-span: all; }
+    .circuit, .console, .strip { break-inside: avoid; -webkit-column-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="rivets">
+      <div class="rivet" style="top:0;left:0;"></div>
+      <div class="rivet" style="top:0;right:0;"></div>
+      <div class="rivet" style="bottom:0;left:0;"></div>
+      <div class="rivet" style="bottom:0;right:0;"></div>
+    </div>
+    <div class="co">Turmanator Ironworks</div>
+    <h1>CONVERSION CIRCUITS</h1>
+    <p class="subtitle">FRACTION &middot; DECIMAL &middot; METRIC</p>
+  </div>
+
+  <a class="backlink" href="../">&larr; SHOP SYSTEMS</a>
+
+  <!-- displays -->
+  <div class="circuit c-red">
+    <div class="circuit-label">Decimal Inches</div>
+    <div class="lcd"><div class="lcd-val" id="d-dec">0.0000</div><div class="lcd-unit">IN</div></div>
+  </div>
+
+  <div class="circuit c-green">
+    <div class="circuit-label">Fraction</div>
+    <div class="lcd"><div class="lcd-val" id="d-frac">0</div><div class="lcd-unit" id="d-fracunit">IN</div></div>
+  </div>
+
+  <div class="circuit c-amber">
+    <div class="circuit-label">Millimeters</div>
+    <div class="lcd"><div class="lcd-val" id="d-mm">0.00</div><div class="lcd-unit">MM</div></div>
+  </div>
+
+  <!-- input console -->
+  <div class="console">
+    <div class="console-title">Input</div>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-mode="dec">Decimal</div>
+      <div class="tab" data-mode="frac">Fraction</div>
+      <div class="tab" data-mode="mm">Metric</div>
+    </div>
+
+    <div id="in-dec">
+      <div class="field" style="margin-bottom:0;">
+        <label for="i-dec">Decimal inches</label>
+        <input type="number" step="0.0001" id="i-dec" value="2.1875">
+      </div>
+    </div>
+
+    <div id="in-frac" style="display:none;">
+      <div class="row3">
+        <div class="field">
+          <label for="i-whole">Whole</label>
+          <input type="number" step="1" min="0" id="i-whole" value="2">
+        </div>
+        <div class="field">
+          <label for="i-num">Numerator</label>
+          <input type="number" step="1" min="0" id="i-num" value="3">
+        </div>
+        <div class="field">
+          <label for="i-den">Denominator</label>
+          <select id="i-den">
+            <option>2</option><option>4</option><option>8</option>
+            <option selected>16</option><option>32</option><option>64</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="in-mm" style="display:none;">
+      <div class="field" style="margin-bottom:0;">
+        <label for="i-mm">Millimeters</label>
+        <input type="number" step="0.01" id="i-mm" value="55.56">
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:13px; margin-bottom:0;">
+      <label for="i-prec">Round fraction to nearest</label>
+      <select id="i-prec">
+        <option value="8">1/8</option>
+        <option value="16" selected>1/16</option>
+        <option value="32">1/32</option>
+        <option value="64">1/64</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- readout -->
+  <div class="strip">
+    <div class="strip-row">
+      <span class="strip-label">NEAREST TAPE MARK</span>
+      <span class="strip-val" id="r-mark">&mdash;</span>
+    </div>
+    <div class="strip-row">
+      <span class="strip-label">ERROR AT THAT MARK</span>
+      <span class="strip-val" id="r-err">&mdash;</span>
+    </div>
+    <div class="strip-row">
+      <span class="strip-label">EXACT ON TAPE?</span>
+      <span class="strip-val" id="r-exact">&mdash;</span>
+    </div>
+    <div class="strip-row">
+      <span class="strip-label">FEET + INCHES</span>
+      <span class="strip-val" id="r-ft">&mdash;</span>
+    </div>
+    <div class="strip-row">
+      <span class="strip-label">IN 64THS</span>
+      <span class="strip-val" id="r-64">&mdash;</span>
+    </div>
+    <div class="strip-row">
+      <span class="strip-label">CENTIMETERS</span>
+      <span class="strip-val" id="r-cm">&mdash;</span>
+    </div>
+  </div>
+
+  <div class="console">
+    <div class="console-title">Tape Reference &mdash; tap to load</div>
+    <div class="tape">
+      <div class="tape-grid" id="tapegrid"></div>
+    </div>
+    <p class="note">Error is how far your number sits from the nearest mark at the selected precision. Anything inside about &plusmn;0.005" you can't see on a tape anyway; past that, either open up the precision or work to the decimal on a caliper.</p>
+  </div>
+</div>
+
+<script>
+var MM_PER_IN = 25.4;
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=b; b=a%b; a=t; } return a||1; }
+function fmt(n,d){ if(!isFinite(n)) return '\u2014'; return n.toFixed(d); }
+
+var mode='dec';
+var value=2.1875; // canonical value, in inches
+
+function toFraction(dec, D){
+  var neg = dec<0; var v=Math.abs(dec);
+  var n = Math.round(v*D);
+  var g = gcd(n, D);
+  var num = n/g, den = D/g;
+  var whole = Math.floor(num/den);
+  var rem = num - whole*den;
+  return { whole:whole, num:rem, den:den, neg:neg, err: dec - (neg?-1:1)*n/D };
+}
+function fracString(f){
+  var s;
+  if (f.num===0) s = String(f.whole);
+  else if (f.whole===0) s = f.num+'/'+f.den;
+  else s = f.whole+'-'+f.num+'/'+f.den;
+  return (f.neg?'-':'')+s;
+}
+
+function setMode(m){
+  mode=m;
+  var tabs=document.getElementById('tabs').children;
+  for (var i=0;i<tabs.length;i++)
+    tabs[i].classList.toggle('active', tabs[i].dataset.mode===m);
+  document.getElementById('in-dec').style.display  = (m==='dec')?'block':'none';
+  document.getElementById('in-frac').style.display = (m==='frac')?'block':'none';
+  document.getElementById('in-mm').style.display   = (m==='mm')?'block':'none';
+  syncInputs();
+}
+var tabEls=document.getElementById('tabs').children;
+for (var t=0;t<tabEls.length;t++){
+  (function(el){ el.addEventListener('click', function(){ setMode(el.dataset.mode); }); })(tabEls[t]);
+}
+
+function syncInputs(){
+  var D=parseInt(document.getElementById('i-prec').value,10);
+  document.getElementById('i-dec').value = +value.toFixed(4);
+  document.getElementById('i-mm').value  = +(value*MM_PER_IN).toFixed(2);
+  var f=toFraction(value, D);
+  document.getElementById('i-whole').value = f.whole;
+  document.getElementById('i-num').value   = f.num;
+  document.getElementById('i-den').value   = f.den >= 2 ? f.den : D;
+}
+
+function readInput(){
+  if (mode==='dec'){
+    value = parseFloat(document.getElementById('i-dec').value);
+  } else if (mode==='mm'){
+    value = parseFloat(document.getElementById('i-mm').value)/MM_PER_IN;
+  } else {
+    var w=parseFloat(document.getElementById('i-whole').value)||0;
+    var n=parseFloat(document.getElementById('i-num').value)||0;
+    var d=parseFloat(document.getElementById('i-den').value)||1;
+    value = w + (d? n/d : 0);
+  }
+  if (!isFinite(value)) value=0;
+  render();
+}
+
+function render(){
+  var D=parseInt(document.getElementById('i-prec').value,10);
+  var f=toFraction(value, D);
+
+  document.getElementById('d-dec').textContent = value.toFixed(4);
+  document.getElementById('d-frac').textContent = fracString(f);
+  document.getElementById('d-fracunit').textContent = 'IN  (to 1/'+D+')';
+  document.getElementById('d-mm').textContent = (value*MM_PER_IN).toFixed(2);
+
+  document.getElementById('r-mark').textContent = fracString(f)+'"';
+  var err=f.err;
+  var errEl=document.getElementById('r-err');
+  errEl.textContent = (err>=0?'+':'') + err.toFixed(4) + '"';
+  errEl.className = 'strip-val ' + (Math.abs(err)<0.0005 ? 'ok' : (Math.abs(err)<0.005 ? '' : 'off'));
+
+  var exact = Math.abs(err) < 0.0005;
+  var exEl=document.getElementById('r-exact');
+  exEl.textContent = exact ? 'YES \u2014 lands on a mark' : 'NO \u2014 between marks';
+  exEl.className = 'strip-val ' + (exact?'ok':'off');
+
+  // Round to the tape FIRST, then split. Splitting first lets an inches value
+  // that rounds up to 12 print as 12" (or 1' 12") instead of carrying a foot.
+  var av=Math.abs(value), sgn=value<0?'-':'';
+  var ticks=Math.round(av*D);                 // whole ticks of 1/D across the value
+  var ftTicks=12*D;                           // ticks in one foot
+  var ft=Math.floor(ticks/ftTicks);
+  var fi=toFraction((ticks-ft*ftTicks)/D, D);
+  document.getElementById('r-ft').textContent =
+    ft>0 ? sgn+ft+"' "+fracString(fi)+'"' : sgn+fracString(fi)+'"';
+
+  document.getElementById('r-64').textContent = Math.round(value*64)+'/64';
+  document.getElementById('r-cm').textContent = (value*2.54).toFixed(3)+' cm';
+}
+
+/* tape reference grid */
+(function(){
+  var marks=[];
+  for (var i=1;i<=16;i++) marks.push(i/16);
+  var grid=document.getElementById('tapegrid');
+  for (var m=0;m<marks.length;m++){
+    (function(v){
+      var f=toFraction(v,16);
+      var cell=document.createElement('div');
+      cell.className='tape-cell';
+      cell.innerHTML='<div class="tape-frac">'+fracString(f)+'"</div><div class="tape-dec">'+v.toFixed(4)+'</div>';
+      cell.addEventListener('click', function(){
+        value=v; syncInputs(); render();
+      });
+      grid.appendChild(cell);
+    })(marks[m]);
+  }
+})();
+
+document.getElementById('i-dec').addEventListener('input', readInput);
+document.getElementById('i-mm').addEventListener('input', readInput);
+document.getElementById('i-whole').addEventListener('input', readInput);
+document.getElementById('i-num').addEventListener('input', readInput);
+document.getElementById('i-den').addEventListener('change', readInput);
+document.getElementById('i-prec').addEventListener('change', function(){ syncInputs(); render(); });
+
+syncInputs();
+render();
+</script>
+</body>
+</html>
