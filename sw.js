@@ -1,6 +1,6 @@
 // Service worker for Turmanator Shop Tools.
 // Bump CACHE when redeploying so phones pick up the new version.
-var CACHE = 'shop-tools-v4';
+var CACHE = 'shop-tools-v5';
 var SHELL = [
   './',
   './index.html',
@@ -14,6 +14,9 @@ var SHELL = [
   './volts/index.html',
   './convert/',
   './convert/index.html',
+  './job/',
+  './job/index.html',
+  './job.js',
   './manifest.webmanifest',
   './apple-touch-icon.png'
 ];
@@ -43,7 +46,7 @@ self.addEventListener('activate', function (e) {
 function navigationFallback(req) {
   if (req.mode !== 'navigate') return './index.html';
   var path = new URL(req.url).pathname;
-  var dirs = ['fab', 'axle', 'cut', 'volts', 'convert'];
+  var dirs = ['fab', 'axle', 'cut', 'volts', 'convert', 'job'];
   for (var i = 0; i < dirs.length; i++) {
     if (path.indexOf('/' + dirs[i]) === 0) return './' + dirs[i] + '/index.html';
   }

@@ -256,6 +256,28 @@
     .wrap > .header, .wrap > .backlink { column-span: all; }
     .panel { break-inside: avoid; -webkit-column-break-inside: avoid; }
   }
+
+  /* ---- job bar ---- */
+  .jobbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    margin: 0 0 16px; padding: 10px 11px;
+    border: 1px solid var(--hud-dim); border-radius: 0; background: rgba(10,20,24,0.6);
+  }
+  .jobbar-sel {
+    flex: 1 1 150px; min-width: 130px; min-height: 40px;
+    padding: 0 26px 0 9px; font-size: 13px;
+  }
+  .jobbar-btn {
+    min-height: 40px; padding: 0 13px; cursor: pointer; font-size: 12px;
+    border-radius: 0; border: 1px solid var(--hud-dim);
+    background: rgba(111,255,90,0.12); color: var(--hud); font-family: inherit;
+  }
+  .jobbar-link {
+    min-height: 40px; display: inline-flex; align-items: center; padding: 0 11px;
+    font-size: 12px; text-decoration: none; color: var(--ice);
+    border: 1px solid var(--hud-dim); border-radius: 0;
+  }
+  .jobbar-msg { flex: 1 1 100%; font-size: 11.5px; color: var(--murk); min-height: 14px; }
 </style>
 </head>
 <body>
@@ -268,6 +290,8 @@
   </div>
 
   <a class="backlink" href="../">&larr; FAB CALCULATORS</a>
+
+  <div class="jobbar" id="jobbar"></div>
 
   <div class="panel">
     <div class="panel-title">Thermal Profile</div>
@@ -1031,7 +1055,30 @@
   renderAxItems();
   syncAxleMode();
   calcAxle();
+
+  // ---- job entry ----
+  window.jobEntry = function () {
+    var g = resolveAxle();
+    if (!isFinite(g.wheel)) return null;
+    return {
+      tool: 'axle',
+      title: 'Axle placement',
+      summary: [
+        ['Gross mass', $('ax-gross').textContent],
+        ['Mass center', $('ax-cg').textContent],
+        ['Wheel center', fmtFixed(g.wheel, 2) + '"'],
+        ['Axle count', $('ax-config').options[$('ax-config').selectedIndex].text],
+        ['Tongue weight', $('ax-tw').textContent],
+        ['Target', $('ax-recnote').textContent],
+        ['Axle should sit at', $('ax-rec').textContent],
+        ['Axle load', $('ax-axleload').textContent]
+      ],
+      materials: []
+    };
+  };
+
 })();
 </script>
+<script src="../job.js"></script>
 </body>
 </html>

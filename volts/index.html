@@ -182,6 +182,25 @@
     .wrap > .header, .wrap > .backlink { column-span: all; }
     .panel { break-inside: avoid; -webkit-column-break-inside: avoid; }
   }
+
+  /* ---- job bar ---- */
+  .jobbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    margin: 0 0 16px; padding: 10px 11px;
+    border: 1px solid var(--cyan-dim); background: rgba(1,7,12,0.6);
+  }
+  .jobbar-sel { flex: 1 1 150px; min-width: 130px; min-height: 40px; padding: 0 26px 0 9px; font-size: 13px; }
+  .jobbar-btn {
+    min-height: 40px; padding: 0 13px; cursor: pointer; font-size: 12px;
+    border: 1px solid var(--cyan-dim); background: rgba(0,229,255,0.10);
+    color: var(--cyan); font-family: inherit;
+  }
+  .jobbar-link {
+    min-height: 40px; display: inline-flex; align-items: center; padding: 0 11px;
+    font-size: 12px; text-decoration: none; color: var(--orange);
+    border: 1px solid var(--cyan-dim);
+  }
+  .jobbar-msg { flex: 1 1 100%; font-size: 11.5px; color: var(--dim); min-height: 14px; }
 </style>
 </head>
 <body>
@@ -194,6 +213,8 @@
   </div>
 
   <a class="backlink" href="../">&larr; SHOP SYSTEMS</a>
+
+  <div class="jobbar" id="jobbar"></div>
 
   <!-- ===== LOAD BUILDER ===== -->
   <div class="panel">
@@ -801,6 +822,33 @@ for (var i=0;i<ids.length;i++)
 
 renderDevices();
 calc();
+
+/* ---- job entry ---- */
+window.jobEntry = function () {
+  var gi = parseInt(document.getElementById('gauge').value, 10);
+  var L = parseFloat(document.getElementById('len').value);
+  var g = groundLeg();
+  if (!isFinite(L)) return null;
+  return {
+    tool: 'volts',
+    title: 'Circuit — #' + AWG[gi].g + ' at ' + L + ' ft',
+    summary: [
+      ['System', document.getElementById('volts').value + ' V DC'],
+      ['Load', document.getElementById('r-load').textContent],
+      ['Run length', L + ' ft'],
+      ['Feed gauge', '#' + AWG[gi].g],
+      ['Ground gauge', '#' + AWG[g.idx].g + ' at ' + g.L + ' ft'],
+      ['Voltage drop', document.getElementById('v-pct').textContent + '  (' + document.getElementById('r-vd').textContent + ')'],
+      ['Smallest gauge that works', document.getElementById('r-rec').textContent],
+      ['Fuse', document.getElementById('fuse').value + ' A — ' + document.getElementById('f-hold').textContent]
+    ],
+    materials: [
+      { desc: '#' + AWG[gi].g + ' wire (feed)', qty: L, unit: 'ft', lb: 0 },
+      { desc: '#' + AWG[g.idx].g + ' wire (ground)', qty: g.L, unit: 'ft', lb: 0 }
+    ]
+  };
+};
 </script>
+<script src="../job.js"></script>
 </body>
 </html>

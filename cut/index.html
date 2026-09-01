@@ -245,6 +245,28 @@
     .wrap > .header, .wrap > .backlink { column-span: all; }
     .panel { break-inside: avoid; -webkit-column-break-inside: avoid; }
   }
+
+  /* ---- job bar ---- */
+  .jobbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    margin: 0 0 16px; padding: 10px 11px;
+    border: 1px solid var(--line); border-radius: 0; background: rgba(6,10,7,0.6);
+  }
+  .jobbar-sel {
+    flex: 1 1 150px; min-width: 130px; min-height: 40px;
+    padding: 0 26px 0 9px; font-size: 13px;
+  }
+  .jobbar-btn {
+    min-height: 40px; padding: 0 13px; cursor: pointer; font-size: 12px;
+    border-radius: 0; border: 1px solid var(--line);
+    background: rgba(255,176,0,0.10); color: var(--amber); font-family: inherit;
+  }
+  .jobbar-link {
+    min-height: 40px; display: inline-flex; align-items: center; padding: 0 11px;
+    font-size: 12px; text-decoration: none; color: var(--phos);
+    border: 1px solid var(--line); border-radius: 0;
+  }
+  .jobbar-msg { flex: 1 1 100%; font-size: 11.5px; color: var(--murk); min-height: 14px; }
 </style>
 </head>
 <body>
@@ -261,6 +283,8 @@
   </div>
 
   <a class="backlink" href="../">&larr; FAB CALCULATORS</a>
+
+  <div class="jobbar" id="jobbar"></div>
 
   <div class="panel">
     <div class="panel-title">Stock &amp; Saw</div>
@@ -907,7 +931,35 @@
 
   renderCuts();
   run();
+
+  // ---- job entry ----
+  window.jobEntry = function () {
+    var stock = parseFloat($('stock').value);
+    var groups = [];
+    document.querySelectorAll('.matgroup').forEach(function (g) {
+      var name = g.querySelector('.matgroup-name').textContent.trim();
+      var meta = g.querySelector('.matgroup-meta').textContent;
+      var m = meta.match(/(\d+)\s*[\u00d7x]/);
+      var w = meta.match(/([\d.,]+)\s*lb/);
+      groups.push({ name: name, sticks: m ? parseInt(m[1], 10) : 0,
+                    lb: w ? parseFloat(w[1].replace(/,/g, '')) : 0 });
+    });
+    if (!groups.length) return null;
+    return {
+      tool: 'cut',
+      title: 'Cut list — ' + groups.length + ' stock type' + (groups.length === 1 ? '' : 's'),
+      summary: [['Stock length', inFt(stock)], ['Kerf', $('kerf').value + '"'],
+                ['End trim', $('trim').value + '"'], ['Sticks', $('r-sticks').textContent],
+                ['Yield', $('r-yield').textContent], ['Cut mass', $('r-wt').textContent]]
+        .concat(groups.map(function (g) { return [g.name, g.sticks + ' x ' + inFt(stock)]; })),
+      materials: groups.map(function (g) {
+        return { desc: g.name + ' @ ' + inFt(stock), qty: g.sticks, unit: 'stick', lb: g.lb };
+      })
+    };
+  };
+
 })();
 </script>
+<script src="../job.js"></script>
 </body>
 </html>
